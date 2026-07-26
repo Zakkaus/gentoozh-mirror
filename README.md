@@ -1,6 +1,6 @@
 # gigos-mirror
 
-[mirror.gentoozh.org](https://mirror.gentoozh.org/) 的源码,Gentoo 中文社区 Live ISO 下载站的落地页和使用说明页。
+[iso.gentoozh.org](https://iso.gentoozh.org/) 的源码,Gentoo 中文社区 Live ISO 下载站的落地页和使用说明页。
 
 ## 文件
 
@@ -14,6 +14,7 @@
 
 推到 main 即部署。Cloudflare Workers 直接从本仓库构建,命令 `npx wrangler deploy`。
 
-域名:`mirror.gentoozh.org` 在 Worker 设置里绑定,`r2.gentoozh.org` 在 R2 的 Custom Domains 绑定。
+域名:`iso.gentoozh.org` 与旧的 `mirror.gentoozh.org` 都绑在这个 Worker 上,旧链接继续可用;
+`r2.gentoozh.org` 是 R2 的 Custom Domains,ISO 文件本身从那里下载。
 
 构建状态推送在 <https://t.me/gentoomirror>。

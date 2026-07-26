@@ -1,4 +1,4 @@
-// mirror.gentoozh.org,Cloudflare Worker
+// iso.gentoozh.org,Cloudflare Worker
 // 落地页 `/` 在边缘即时读 R2(gentoozh 桶)渲染:最新 ISO + 全部历史版本;
 // 下载链接指向 R2 自定义域 r2.gentoozh.org(零出口流量、可缓存)。
 // about.html 与 /assets/* 走 Worker 静态资产(public/)。
