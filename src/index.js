@@ -19,7 +19,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/index.html") {
       // 抗 CC 关键:把渲染好的首页在【边缘缓存】60s。被洪水般刷首页时,每 60s 只有第一个
       // 请求真读 R2(list + 2 个 get = 3 个 op)并渲染,其余全是边缘缓存命中(0 R2 op、0 渲染)。
-      // 无论多少 IP 刷,首页的 R2 op 都焊在「每 60s 一次」,且攻击下首页照常在线。
+      // 无论多少 IP 刷,首页的 R2 请求固定为每 60 秒一次,遭遇高频请求时首页照常在线。
       const cache = caches.default;
       const cacheKey = new Request(new URL("/", url), { method: "GET" });
       const hit = await cache.match(cacheKey);

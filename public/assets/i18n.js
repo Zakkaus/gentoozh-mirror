@@ -7,7 +7,7 @@
  *      简体取自文档原文；其它语言由 window.MIRROR_I18N[lang][key] 提供，缺则回落简体。
  *   2) 整段翻译：同一段内容写多份 <div data-langblock="zh-cn"> / "zh-tw" / "en">，
  *      非当前语言的 hidden。行内同理用 data-langblock-inline。简体段直接写在 HTML。
- *   控件注入到 #controls；#copy-toast 存在时才挂「点击复制」。
+ *   控件注入到 #controls；#copy-toast 存在时才挂点击复制行为。
  *   无脚本 / 文本浏览器下控件整段不存在，页面保持干净（简体原文可读）。
  */
 (function () {
