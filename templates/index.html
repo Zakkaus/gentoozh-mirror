@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gentoo 中文社区 · 镜像站</title>
+<meta name="description" content="Gentoo 中文社区镜像站,社区定制 KDE 桌面 Live ISO 下载。由 Cloudflare R2 提供，全球边缘、不限流量。">
+<!-- Open Graph / Telegram 等社交预览卡:显式给标题/描述/图,别让抓取器回落到旧缓存或乱猜 -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gentoo 中文社区">
+<meta property="og:title" content="Gentoo 中文社区 · 镜像站">
+<meta property="og:description" content="社区定制 KDE 桌面 Live ISO 下载。由 Cloudflare R2 提供，全球边缘、不限流量。">
+<meta property="og:url" content="https://mirror.gentoozh.org/">
+<meta property="og:image" content="https://mirror.gentoozh.org/assets/logo.webp">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/assets/logo.webp">
+<script>
+/* 首屏前先定主题与语言，避免闪烁。主题：light/dark 写属性，system 不写（交给系统媒体查询）。
+   语言：无存储时按浏览器语言猜简/繁/英。切换控件由 /assets/i18n.js 注入，无脚本环境不显示。 */
+(function () {
+  try {
+    var t = localStorage.getItem('mirror-theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    var l = localStorage.getItem('mirror-lang');
+    if (!l) { var n = navigator.language || ''; l = /^en/i.test(n) ? 'en' : (/(^|-)(tw|hk|mo|hant)/i.test(n) ? 'zh-tw' : 'zh-cn'); }
+    document.documentElement.lang = l;
+  } catch (e) {}
+})();
+</script>
+<style>
+:root {
+  color-scheme: light dark;
+  --primary: hsl(252 27% 38%);
+  --bg: #ffffff; --fg: #111827; --fg-body: #374151; --fg-soft: #6b7280;
+  --border: #e5e7eb; --card: #ffffff; --chip: rgba(0,0,0,0.05); --hover: rgba(0,0,0,0.05); --note-bg: #f5f3fb;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --primary: hsl(252 32% 64%);
+  --bg: #111111; --fg: #f3f4f6; --fg-body: #d1d5db; --fg-soft: #9ca3af;
+  --border: #383838; --card: #1b1b1b; --chip: rgba(255,255,255,0.08); --hover: rgba(255,255,255,0.08); --note-bg: #1a1730;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --primary: hsl(252 32% 64%);
+    --bg: #111111; --fg: #f3f4f6; --fg-body: #d1d5db; --fg-soft: #9ca3af;
+    --border: #383838; --card: #1b1b1b; --chip: rgba(255,255,255,0.08); --hover: rgba(255,255,255,0.08); --note-bg: #1a1730;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg-body); line-height: 1.7;
+       font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans CJK SC","Microsoft YaHei",sans-serif;
+       -webkit-font-smoothing: antialiased; }
+
+/* 顶栏：贴近官网,细分割线、毛玻璃、内容居中对齐正文 */
+.nav { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--border);
+       background: color-mix(in srgb, var(--bg) 82%, transparent);
+       -webkit-backdrop-filter: blur(12px) saturate(180%); backdrop-filter: blur(12px) saturate(180%); }
+.nav-inner { max-width: 720px; margin: 0 auto; padding: 0.55rem 1.25rem; display: flex; align-items: center;
+             justify-content: space-between; gap: 0.75rem; }
+.nav-brand { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--fg); min-width: 0; }
+.nav-brand img { width: 28px; height: auto; flex: none; }
+.nav-title { font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-controls { display: inline-flex; align-items: center; gap: 0.2rem; flex: none; }
+.nav-link { color: var(--fg-soft); text-decoration: none; font-size: 0.86rem; font-weight: 600; padding: 0.32rem 0.5rem; border-radius: 0.4rem; white-space: nowrap; }
+.nav-link:hover { background: var(--hover); color: var(--fg); }
+.lang { display: inline-flex; align-items: center; }
+.lang-btn { border: none; background: transparent; color: var(--fg-soft); font: inherit; font-size: 0.88rem; font-weight: 600;
+            padding: 0.32rem 0.46rem; border-radius: 0.4rem; cursor: pointer; line-height: 1; }
+.lang-btn:hover { background: var(--hover); color: var(--fg); }
+.lang-btn.active { color: var(--primary); }
+.nav-sep { width: 1px; height: 18px; background: var(--border); margin: 0 0.4rem; flex: none; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border: none;
+            border-radius: 0.5rem; background: transparent; color: var(--fg-soft); cursor: pointer; }
+.icon-btn:hover { background: var(--hover); color: var(--fg); }
+.menu-wrap { position: relative; }
+.menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 138px; background: var(--card);
+        border: 1px solid var(--border); border-radius: 0.6rem; box-shadow: 0 10px 28px rgba(0,0,0,0.14);
+        padding: 0.3rem; display: flex; flex-direction: column; gap: 0.1rem; z-index: 50; }
+.menu[hidden] { display: none; }
+.menu-item { display: flex; align-items: center; gap: 0.55rem; width: 100%; border: none; background: transparent;
+             color: var(--fg-body); font: inherit; font-size: 0.86rem; padding: 0.42rem 0.6rem; border-radius: 0.4rem;
+             cursor: pointer; text-align: left; }
+.menu-item:hover { background: var(--hover); }
+.menu-item.active { color: var(--primary); font-weight: 600; }
+.menu-item svg { flex: none; }
+@media (max-width: 480px) { .nav-title { display: none; } }
+
+
+/* ── 内容层：把「发布产物」当主体来排版。机器数据(文件名/大小/日期/校验和)统一用等宽字体，
+   成为版面的骨架而不是角落小字；人读的文案交给正文字体，靠字号与字重拉开层次。 ── */
+:root { --mono: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+        --panel: color-mix(in srgb, var(--primary) 5%, var(--card)); }
+:root[data-theme="dark"] { }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { } }
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 2.6rem 1.25rem 1rem; }
+
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em; color: var(--primary);
+           margin: 0 0 0.7rem; font-weight: 600; }
+.title { font-size: 2.05rem; line-height: 1.18; letter-spacing: -0.02em; font-weight: 700;
+         color: var(--fg); margin: 0 0 0.75rem; }
+.lead { font-size: 1rem; line-height: 1.8; color: var(--fg-body); margin: 0 0 2.1rem; max-width: 54ch; }
+
+/* 当前版本：本页的主体。文件名用等宽大字直接作标题,产物名就是产品名。 */
+.build { border: 1px solid var(--border); border-radius: 0.85rem; background: var(--panel); padding: 1.5rem 1.6rem; }
+.build-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--fg-soft);
+               text-transform: uppercase; margin: 0 0 0.5rem; }
+.build-name { font-family: var(--mono); font-size: 1.3rem; font-weight: 600; color: var(--fg);
+              margin: 0 0 0.55rem; word-break: break-all; letter-spacing: -0.01em; }
+.build-meta { font-family: var(--mono); font-size: 0.82rem; color: var(--fg-soft); margin: 0 0 1.3rem;
+              display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; }
+.build-meta span { white-space: nowrap; }
+.btn { display: inline-block; background: var(--primary); color: #fff; font-weight: 600; font-size: 1rem;
+       padding: 0.72rem 1.7rem; border-radius: 0.55rem; text-decoration: none; transition: filter 0.15s ease; }
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.hashes { margin-top: 1.35rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
+.hash-row { display: flex; gap: 0.6rem; align-items: baseline; font-family: var(--mono); font-size: 0.78rem;
+            color: var(--fg-soft); margin-bottom: 0.35rem; }
+.hash-key { flex: none; font-weight: 600; color: var(--fg-body); }
+.hash-val { word-break: break-all; overflow-wrap: anywhere; }
+.hash-row a { color: var(--primary); text-decoration: none; flex: none; }
+.hash-row a:hover { text-decoration: underline; }
+.verify { font-size: 0.8rem; color: var(--fg-soft); margin: 0.6rem 0 0; }
+
+.creds { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: 0.86rem; color: var(--fg-soft); }
+.creds-label { margin-bottom: 0.55rem; }
+.creds-row { display: flex; flex-wrap: wrap; gap: 0.45rem 1.15rem; }
+.cred { display: inline-flex; align-items: baseline; gap: 0.35rem; }
+.copy-chip { cursor: pointer; user-select: none; background: var(--chip); color: var(--fg); font-weight: 600;
+             font-family: var(--mono); padding: 0.12rem 0.5rem; border-radius: 0.35rem; }
+.copy-chip:hover { outline: 1px solid var(--primary); outline-offset: 1px; }
+.copy-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+/* 系统要求:用等宽规格标签呈现,不做填色高亮。重要性靠位置(紧跟下载)与排版表达。 */
+.req { margin-top: 1.9rem; padding-top: 1.3rem; border-top: 1px solid var(--border); }
+.req-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; color: var(--fg); margin: 0 0 0.75rem; }
+.specs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+.spec { font-family: var(--mono); font-size: 0.78rem; color: var(--fg-body); background: var(--card);
+        border: 1px solid var(--border); border-radius: 0.35rem; padding: 0.22rem 0.58rem; white-space: nowrap; }
+.req-body { font-size: 0.86rem; line-height: 1.75; color: var(--fg-soft); margin: 0; }
+.req-body code { font-family: var(--mono); font-size: 0.92em; color: var(--fg-body); }
+
+.features { margin-top: 1.1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.feature { border: 1px solid var(--border); border-radius: 0.55rem; padding: 0.95rem 1.1rem; background: var(--card); }
+.feature h3 { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin: 0 0 0.35rem; }
+.feature p { font-size: 0.85rem; line-height: 1.7; color: var(--fg-body); margin: 0; }
+.feature a, .req-body a { color: var(--primary); text-decoration: none; font-weight: 600; }
+.feature a:hover, .req-body a:hover { text-decoration: underline; }
+@media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+
+/* 历史版本：对齐的清单，而不是圆点列表。 */
+.builds { margin-top: 2rem; }
+.builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
+.builds table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.84rem; }
+.builds td { padding: 0.5rem 0; border-top: 1px solid var(--border); }
+.builds tr:first-child td { border-top: none; }
+.builds td.f a { color: var(--primary); text-decoration: none; font-weight: 600; word-break: break-all; }
+.builds td.f a:hover { text-decoration: underline; }
+.builds td.s { text-align: right; color: var(--fg-soft); white-space: nowrap; padding-left: 0.9rem; }
+.builds td.d { text-align: right; color: var(--fg-soft); white-space: nowrap; padding-left: 0.9rem; }
+@media (max-width: 460px) { .builds td.d { display: none; } }
+
+.foot { max-width: 720px; margin: 2.2rem auto 0; padding: 1.3rem 1.25rem 2.6rem;
+        border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--fg-soft); }
+.foot a { color: var(--primary); text-decoration: none; }
+.foot a:hover { text-decoration: underline; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+#copy-toast { position: fixed; left: 50%; bottom: 1.6rem; transform: translateX(-50%) translateY(0.8rem);
+              background: var(--primary); color: #fff; font-size: 0.84rem; font-weight: 600; padding: 0.45rem 1rem;
+              border-radius: 0.5rem; opacity: 0; pointer-events: none; z-index: 60; transition: opacity 0.18s ease, transform 0.18s ease; }
+#copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/">
+      <img src="/assets/logo.webp" alt="">
+      <span class="nav-title" data-i18n="brand">Gentoo 中文社区 · 镜像站</span>
+    </a>
+    <nav class="nav-controls" id="controls" aria-label="站点设置">
+      <a class="nav-link" href="/about.html" data-i18n="navAbout">使用说明</a>
+    </nav>
+  </div>
+</header>
+
+
+<main class="wrap">
+  <p class="eyebrow" data-i18n="subtitle">mirror.gentoozh.org</p>
+  <h1 class="title" data-i18n="title">Gentoo 中文社区 Live ISO</h1>
+  <p class="lead" data-i18n="lead">KDE Plasma 6 桌面，预先配好中文环境与输入法，可直接试用，也可安装到硬盘。每周构建。</p>
+
+  <section class="build">
+    <p class="build-label" data-i18n="buildLabel">当前版本</p>
+    <p class="build-name">@@ISO_NAME@@</p>
+    <p class="build-meta"><span>@@ISO_SIZE@@</span><span>@@ISO_DATE@@</span><span>amd64</span></p>
+    <a class="btn" href="https://r2.gentoozh.org/@@ISO_NAME@@" data-i18n="btn">下载 ISO</a>
+
+    <div class="hashes">
+      <div class="hash-row"><span class="hash-key">SHA256</span><span class="hash-val">@@ISO_SHA256@@</span><a href="https://r2.gentoozh.org/@@ISO_NAME@@.sha256">.sha256</a></div>
+      <div class="hash-row"><span class="hash-key">MD5</span><span class="hash-val">@@ISO_MD5@@</span><a href="https://r2.gentoozh.org/@@ISO_NAME@@.md5">.md5</a></div>
+      <p class="verify" data-i18n="verify">下载后请核对校验和。</p>
+    </div>
+
+    <div class="creds">
+      <div class="creds-label" data-i18n="credsLabel">登录信息（点击复制）</div>
+      <div class="creds-row">
+        <span class="cred"><span data-i18n="credUser">用户</span> <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
+        <span class="cred"><span data-i18n="credPass">密码</span> <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
+        <span class="cred">Root <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="req">
+    <p class="req-title" data-i18n="reqTitle">系统要求</p>
+    <div class="specs">
+      <span class="spec">x86-64</span>
+      <span class="spec">AVX2</span>
+      <span class="spec" data-i18n="specCpu">2013 年之后的处理器</span>
+      <span class="spec">UEFI / BIOS</span>
+    </div>
+    <p class="req-body" data-i18n-html="req">虚拟机中 VirtualBox 通常无法透传 AVX2,镜像无法启动。请改用 KVM(<code>-cpu host</code>)、原生 Hyper-V 或 VMware。</p>
+  </div>
+
+  <div class="features">
+    <div class="feature">
+      <h3 data-i18n="featZfsTitle">ZFS 根与原生加密</h3>
+      <p data-i18n-html="featZfs">分区页可选 ZFS 作根文件系统，勾选加密即使用 ZFS 原生加密（aes-256-gcm），由 ZFSBootMenu 引导。默认 btrfs，另可选 xfs / ext4。详见<a href="/about.html">使用说明</a>。</p>
+    </div>
+    <div class="feature">
+      <h3 data-i18n="featNvTitle">NVIDIA 闭源驱动</h3>
+      <p data-i18n-html="featNv">RTX 20/30/40/50 需要硬件加速时，在启动菜单选择闭源 NVIDIA 项，并先在 BIOS 关闭 Secure Boot。详见<a href="/about.html">使用说明</a>。</p>
+    </div>
+  </div>
+
+  <div class="builds">
+    <div class="builds-label" data-i18n="allver">全部版本</div>
+    <table>
+@@ISO_HISTORY@@
+    </table>
+  </div>
+</main>
+
+<footer class="foot">
+  <span data-i18n-html="footer">本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社区</a> 的 Live ISO 下载镜像。新版构建通知：<a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>。</span>
+</footer>
+
+<div id="copy-toast" aria-hidden="true"></div>
+
+<script>
+/* 非简体翻译表（简体取自上方文档原文）。引擎与切换控件见 /assets/i18n.js。
+   ISO 信息（文件名/大小/日期/校验和/版本列表）由 Cloudflare Worker 在边缘读 R2 填充。 */
+window.MIRROR_I18N = {
+  'zh-tw': {
+    brand: 'Gentoo 中文社群 · 鏡像站',
+    navAbout: '使用說明',
+    subtitle: 'mirror.gentoozh.org',
+    title: 'Gentoo 中文社群 Live ISO',
+    lead: 'KDE Plasma 6 桌面，預先配好中文環境與輸入法，可直接試用，也可安裝到硬碟。每週建置。',
+    buildLabel: '目前版本',
+    btn: '下載 ISO',
+    verify: '下載後請核對校驗和。',
+    credsLabel: '登入資訊（點選複製）',
+    credUser: '使用者',
+    credPass: '密碼',
+    reqTitle: '系統需求',
+    specCpu: '2013 年之後的處理器',
+    req: '虛擬機中 VirtualBox 通常無法透傳 AVX2，鏡像無法啟動。請改用 KVM（<code>-cpu host</code>）、原生 Hyper-V 或 VMware。',
+    featZfsTitle: 'ZFS 根與原生加密',
+    featZfs: '分割區頁可選 ZFS 作根檔案系統，勾選加密即使用 ZFS 原生加密（aes-256-gcm），由 ZFSBootMenu 引導。預設 btrfs，另可選 xfs / ext4。詳見<a href="/about.html">使用說明</a>。',
+    featNvTitle: 'NVIDIA 閉源驅動',
+    featNv: 'RTX 20/30/40/50 需要硬體加速時，在啟動選單選擇閉源 NVIDIA 項，並先在 BIOS 關閉 Secure Boot。詳見<a href="/about.html">使用說明</a>。',
+    allver: '全部版本',
+    footer: '本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社群</a> 的 Live ISO 下載鏡像。新版建置通知：<a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>。'
+  },
+  'en': {
+    brand: 'Gentoo-zh Community · Mirror',
+    navAbout: 'Guide',
+    subtitle: 'mirror.gentoozh.org',
+    title: 'Gentoo-zh Community Live ISO',
+    lead: 'A KDE Plasma 6 desktop with the Chinese environment and input methods already set up. Run it live or install it to disk. Built weekly.',
+    buildLabel: 'Current build',
+    btn: 'Download ISO',
+    verify: 'Verify the checksum after downloading.',
+    credsLabel: 'Login (click to copy)',
+    credUser: 'User',
+    credPass: 'Password',
+    reqTitle: 'Requirements',
+    specCpu: 'CPU from 2013 or later',
+    req: 'In a virtual machine, VirtualBox usually cannot pass AVX2 through and the image will not boot. Use KVM (<code>-cpu host</code>), native Hyper-V or VMware.',
+    featZfsTitle: 'ZFS root with native encryption',
+    featZfs: 'ZFS can be chosen as the root filesystem on the partitioning page; ticking Encrypt uses ZFS native encryption (aes-256-gcm), booted by ZFSBootMenu. The default is btrfs, with xfs / ext4 also available. See the <a href="/about.html">guide</a>.',
+    featNvTitle: 'Proprietary NVIDIA driver',
+    featNv: 'For hardware acceleration on RTX 20/30/40/50, pick the proprietary NVIDIA boot entry and disable Secure Boot in the BIOS first. See the <a href="/about.html">guide</a>.',
+    allver: 'All builds',
+    footer: 'The Live ISO download mirror of the <a href="https://www.gentoo.org.cn/">Gentoo-zh Community</a>. New-build notifications: <a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>.'
+  }
+};
+</script>
+<script src="/assets/i18n.js"></script>
+</body>
+</html>

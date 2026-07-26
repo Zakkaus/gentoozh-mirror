@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>关于 Live ISO · Gentoo 中文社区镜像站</title>
+<meta name="description" content="Gentoo 中文社区 Live ISO 说明：三语言开机、fcitx5+rime 输入法切换、开源/闭源 NVIDIA 显卡、安装到硬盘、登录与硬件要求。">
+<link rel="icon" href="/assets/logo.webp">
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('mirror-theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    var l = localStorage.getItem('mirror-lang');
+    if (!l) { var n = navigator.language || ''; l = /^en/i.test(n) ? 'en' : (/(^|-)(tw|hk|mo|hant)/i.test(n) ? 'zh-tw' : 'zh-cn'); }
+    document.documentElement.lang = l;
+  } catch (e) {}
+})();
+</script>
+<style>
+:root { color-scheme: light dark; --primary: hsl(252 27% 38%);
+  --bg:#fff; --fg:#111827; --fg-body:#374151; --fg-soft:#6b7280; --border:#e5e7eb; --card:#fff;
+  --chip:rgba(0,0,0,0.05); --hover:rgba(0,0,0,0.05); }
+:root[data-theme="dark"] { color-scheme: dark; --primary: hsl(252 32% 64%);
+  --bg:#111; --fg:#f3f4f6; --fg-body:#d1d5db; --fg-soft:#9ca3af; --border:#383838; --card:#1b1b1b;
+  --chip:rgba(255,255,255,0.08); --hover:rgba(255,255,255,0.08); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --primary: hsl(252 32% 64%);
+  --bg:#111; --fg:#f3f4f6; --fg-body:#d1d5db; --fg-soft:#9ca3af; --border:#383838; --card:#1b1b1b;
+  --chip:rgba(255,255,255,0.08); --hover:rgba(255,255,255,0.08); } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--fg-body); line-height:1.75;
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans CJK SC","Microsoft YaHei",sans-serif; -webkit-font-smoothing:antialiased; }
+.nav { position:sticky; top:0; z-index:40; border-bottom:1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 82%, transparent); -webkit-backdrop-filter:blur(12px) saturate(180%); backdrop-filter:blur(12px) saturate(180%); }
+.nav-inner { max-width:760px; margin:0 auto; padding:0.55rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; }
+.nav-brand { display:inline-flex; align-items:center; gap:0.55rem; text-decoration:none; color:var(--fg); min-width:0; }
+.nav-brand img { width:28px; height:auto; flex:none; }
+.nav-title { font-weight:700; font-size:0.95rem; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.nav-controls { display:inline-flex; align-items:center; gap:0.2rem; flex:none; }
+.nav-link { color:var(--fg-soft); text-decoration:none; font-size:0.86rem; font-weight:600; padding:0.32rem 0.5rem; border-radius:0.4rem; white-space:nowrap; }
+.nav-link:hover { background:var(--hover); color:var(--fg); }
+.lang { display:inline-flex; }
+.lang-btn { border:none; background:transparent; color:var(--fg-soft); font:inherit; font-size:0.88rem; font-weight:600; padding:0.32rem 0.46rem; border-radius:0.4rem; cursor:pointer; line-height:1; }
+.lang-btn:hover { background:var(--hover); color:var(--fg); } .lang-btn.active { color:var(--primary); }
+.icon-btn { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border:none; border-radius:0.5rem; background:transparent; color:var(--fg-soft); cursor:pointer; }
+.icon-btn:hover { background:var(--hover); color:var(--fg); }
+.menu-wrap { position:relative; }
+.menu { position:absolute; right:0; top:calc(100% + 6px); min-width:138px; background:var(--card); border:1px solid var(--border); border-radius:0.6rem; box-shadow:0 10px 28px rgba(0,0,0,0.14); padding:0.3rem; display:flex; flex-direction:column; gap:0.1rem; z-index:50; }
+.menu[hidden] { display:none; }
+.menu-item { display:flex; align-items:center; gap:0.55rem; width:100%; border:none; background:transparent; color:var(--fg-body); font:inherit; font-size:0.86rem; padding:0.42rem 0.6rem; border-radius:0.4rem; cursor:pointer; text-align:left; }
+.menu-item:hover { background:var(--hover); } .menu-item.active { color:var(--primary); font-weight:600; } .menu-item svg { flex:none; }
+/* 内容层与首页同一套语言:等宽用于机器数据与规格,分节靠细线,不用填色高亮块。 */
+:root { --mono: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
+.wrap { max-width:720px; margin:0 auto; padding:2.4rem 1.25rem 1rem; }
+.page-title { font-size:1.9rem; line-height:1.2; font-weight:700; color:var(--fg); margin:0 0 0.7rem; letter-spacing:-0.02em; }
+.lead { font-size:1rem; color:var(--fg-body); margin:0 0 2.2rem; max-width:54ch; }
+h2 { font-size:1.05rem; font-weight:700; color:var(--fg); margin:2.2rem 0 0.7rem; padding-top:1.3rem; border-top:1px solid var(--border); letter-spacing:-0.01em; }
+h3 { font-size:0.92rem; font-weight:700; color:var(--fg); margin:1.4rem 0 0.4rem; }
+p { margin:0.55rem 0; font-size:0.93rem; }
+ul { margin:0.55rem 0; padding-left:1.15rem; } li { margin:0.35rem 0; font-size:0.93rem; }
+b { color:var(--fg); font-weight:600; }
+a { color:var(--primary); text-decoration:none; font-weight:600; } a:hover { text-decoration:underline; }
+code { background:var(--chip); color:var(--fg); font-family:var(--mono); font-size:0.86em; padding:0.1rem 0.4rem; border-radius:0.3rem; }
+kbd { background:var(--card); color:var(--fg); border:1px solid var(--border); border-bottom-width:2px; border-radius:0.35rem;
+      padding:0.05rem 0.45rem; font-family:var(--mono); font-size:0.82em; }
+.specs { display:flex; flex-wrap:wrap; gap:0.4rem; margin:0.7rem 0; }
+.spec { font-family:var(--mono); font-size:0.78rem; color:var(--fg-body); background:var(--card);
+        border:1px solid var(--border); border-radius:0.35rem; padding:0.22rem 0.58rem; white-space:nowrap; }
+.back { margin-top:2.4rem; padding-top:1.3rem; border-top:1px solid var(--border); }
+.foot { max-width:720px; margin:1.4rem auto 0; padding:1.3rem 1.25rem 2.6rem; border-top:1px solid var(--border); font-size:0.82rem; color:var(--fg-soft); }
+.foot a { color:var(--primary); text-decoration:none; font-weight:600; }
+@media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="nav-inner">
+    <a class="nav-brand" href="/"><img src="/assets/logo.webp" alt=""><span class="nav-title" data-i18n="brand">Gentoo 中文社区 · 镜像站</span></a>
+    <nav class="nav-controls" id="controls" aria-label="站点设置">
+      <a class="nav-link" href="/" data-i18n="navDl">下载</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+<div data-langblock="zh-cn">
+  <h1 class="page-title">关于这个 Live ISO</h1>
+  <p class="lead">Gentoo 中文社区每周构建的 KDE Plasma 6 桌面 Live ISO。中文环境、输入法、字体与显卡驱动都已配好,可直接试用,也可安装到硬盘。</p>
+
+  <h2>启动菜单</h2>
+  <p>GRUB 顶部三档语言:<b>简体中文 / 正體中文(臺灣)/ English</b>。选定后桌面、Firefox 与输入法一并跟随。下方四项各自也含三种语言:</p>
+  <ul>
+    <li><b>闭源 NVIDIA 驱动</b>:新卡需要硬件加速时用,须先关闭 Secure Boot(见下)。</li>
+    <li><b>安全显卡模式</b>:nomodeset,点不亮的显卡用它进桌面。</li>
+    <li><b>拷贝到内存</b>:整盘载入内存后运行,U 盘可拔,速度更快。</li>
+    <li><b>从本地硬盘启动</b>:误插 U 盘时用。</li>
+  </ul>
+
+  <h2>中文输入法</h2>
+  <p>默认朙月拼音(简体)。右键托盘的输入法图标,选「方案」即可启用或切换注音、五笔86、仓颉、粤拼等,新方案首次使用需在列表里勾选。</p>
+  <ul>
+    <li><kbd>Ctrl</kbd> + <kbd>`</kbd> 在已启用的方案之间切换。</li>
+    <li><kbd>Ctrl</kbd> + <kbd>空格</kbd> 开关输入法。</li>
+  </ul>
+
+  <h2>显卡驱动</h2>
+  <p>默认使用开源 nouveau,即插即用。RTX 20/30/40/50 需要硬件加速时,在启动菜单选「闭源 NVIDIA 驱动」。</p>
+  <p><b>闭源驱动模块未签名,须先在 BIOS 关闭 Secure Boot</b>,否则内核拒绝加载,表现为黑屏或卡住。与 Windows 双系统且想保留 Secure Boot 的,可在装机期间临时关闭,或装好后给模块签名并录入 MOK 密钥。显卡仍点不亮时,用「安全显卡模式」。</p>
+
+  <h2>安装到硬盘</h2>
+  <p>想完整了解系统,建议照 <a href="https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn">Gentoo 官方手册</a>一步步安装。桌面也提供图形安装器:双击「安装系统」启动 Calamares,界面语言跟随 live 中所选。安装完成后会自动清除 live 专用配置(开机自动登录等),并按所选显卡为新系统配好驱动。</p>
+  <h3>文件系统与加密</h3>
+  <p>分区页可选根文件系统,默认 <b>btrfs</b>,另有 xfs、ext4 与 ZFS。</p>
+  <ul>
+    <li><b>ZFS 根</b>:选 ZFS 并勾选加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引导。GRUB 读不了带新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。开机需输两次密码(ZBM 一次、系统 initramfs 一次),属正常现象。</li>
+    <li><b>LUKS 全盘加密</b>:xfs / ext4 / btrfs 在分区时勾选 LUKS,由 GRUB 引导,通常只需输一次密码。</li>
+  </ul>
+
+  <h2>硬件要求</h2>
+  <div class="specs"><span class="spec">x86-64</span><span class="spec">AVX2</span><span class="spec">2013 年之后的处理器</span></div>
+  <p>镜像按 x86-64-v3 编译,必须有 AVX2,更早的 CPU 无法启动。</p>
+  <p><b>虚拟机</b>:VirtualBox 通常透传不了 AVX2(Hyper-V/WHP 后端没有,原生 VT-x 后端也常没有),镜像多半起不来。请用 KVM(<code>-cpu host</code>)、原生 Hyper-V 或 VMware。进入系统后可用 <code>grep -o avx2 /proc/cpuinfo</code> 实测。</p>
+  <p>登录信息与校验和见<a href="/">下载页</a>。安装完成后,编译参数 <code>CPU_FLAGS_X86</code> 会在首次开机按本机 CPU 自动生成。</p>
+
+  <h2>问题反馈</h2>
+  <ul>
+    <li>缺陷与改进建议:<a href="https://github.com/gentoo-zh/Live-ISO/issues">Live-ISO issues</a>。</li>
+    <li>使用问题与讨论:<a href="https://forum.gentoozh.org/">社区论坛</a>、<a href="https://t.me/gentoo_zh">Telegram 群</a>。</li>
+    <li>邮件:<a href="mailto:liveos@gentoozh.org">liveos@gentoozh.org</a>。</li>
+  </ul>
+  <p>新版构建通知:Telegram 频道 <a href="https://t.me/gentoomirror">@gentoomirror</a>。</p>
+
+  <p class="back"><a href="/">← 返回下载</a></p>
+</div>
+
+<div data-langblock="zh-tw" hidden>
+  <h1 class="page-title">關於這個 Live ISO</h1>
+  <p class="lead">Gentoo 中文社群每週建置的 KDE Plasma 6 桌面 Live ISO。中文環境、輸入法、字型與顯示卡驅動都已配好,可直接試用,也可安裝到硬碟。</p>
+
+  <h2>啟動選單</h2>
+  <p>GRUB 頂部三檔語言:<b>簡體中文 / 正體中文(臺灣)/ English</b>。選定後桌面、Firefox 與輸入法一併跟隨。下方四項各自也含三種語言:</p>
+  <ul>
+    <li><b>閉源 NVIDIA 驅動</b>:新卡需要硬體加速時用,須先關閉 Secure Boot(見下)。</li>
+    <li><b>安全顯示卡模式</b>:nomodeset,點不亮的顯示卡用它進桌面。</li>
+    <li><b>拷貝到記憶體</b>:整碟載入記憶體後執行,USB 可拔,速度更快。</li>
+    <li><b>從本機硬碟啟動</b>:誤插 USB 時用。</li>
+  </ul>
+
+  <h2>中文輸入法</h2>
+  <p>預設朙月拼音(簡體)。右鍵系統匣的輸入法圖示,選「方案」即可啟用或切換注音、五筆86、倉頡、粵拼等,新方案首次使用需在清單裡勾選。</p>
+  <ul>
+    <li><kbd>Ctrl</kbd> + <kbd>`</kbd> 在已啟用的方案之間切換。</li>
+    <li><kbd>Ctrl</kbd> + <kbd>空白鍵</kbd> 開關輸入法。</li>
+  </ul>
+
+  <h2>顯示卡驅動</h2>
+  <p>預設使用開源 nouveau,隨插即用。RTX 20/30/40/50 需要硬體加速時,在啟動選單選「閉源 NVIDIA 驅動」。</p>
+  <p><b>閉源驅動模組未簽名,須先在 BIOS 關閉 Secure Boot</b>,否則核心拒絕載入,表現為黑畫面或卡住。與 Windows 雙系統且想保留 Secure Boot 的,可在安裝期間暫時關閉,或裝好後為模組簽名並登錄 MOK 金鑰。顯示卡仍點不亮時,用「安全顯示卡模式」。</p>
+
+  <h2>安裝到硬碟</h2>
+  <p>想完整了解系統,建議照 <a href="https://wiki.gentoo.org/wiki/Handbook:AMD64/zh-cn">Gentoo 官方手冊</a>一步步安裝。桌面也提供圖形安裝器:雙擊「安裝系統」啟動 Calamares,介面語言跟隨 live 中所選。安裝完成後會自動清除 live 專用設定(開機自動登入等),並依所選顯示卡為新系統配好驅動。</p>
+  <h3>檔案系統與加密</h3>
+  <p>分割區頁可選根檔案系統,預設 <b>btrfs</b>,另有 xfs、ext4 與 ZFS。</p>
+  <ul>
+    <li><b>ZFS 根</b>:選 ZFS 並勾選加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引導。GRUB 讀不了帶新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。開機需輸兩次密碼(ZBM 一次、系統 initramfs 一次),屬正常現象。</li>
+    <li><b>LUKS 全碟加密</b>:xfs / ext4 / btrfs 在分割時勾選 LUKS,由 GRUB 引導,通常只需輸一次密碼。</li>
+  </ul>
+
+  <h2>硬體需求</h2>
+  <div class="specs"><span class="spec">x86-64</span><span class="spec">AVX2</span><span class="spec">2013 年之後的處理器</span></div>
+  <p>鏡像按 x86-64-v3 編譯,必須有 AVX2,更早的 CPU 無法啟動。</p>
+  <p><b>虛擬機</b>:VirtualBox 通常透傳不了 AVX2(Hyper-V/WHP 後端沒有,原生 VT-x 後端也常沒有),鏡像多半起不來。請用 KVM(<code>-cpu host</code>)、原生 Hyper-V 或 VMware。進入系統後可用 <code>grep -o avx2 /proc/cpuinfo</code> 實測。</p>
+  <p>登入資訊與校驗和見<a href="/">下載頁</a>。安裝完成後,編譯參數 <code>CPU_FLAGS_X86</code> 會在首次開機依本機 CPU 自動產生。</p>
+
+  <h2>問題回報</h2>
+  <ul>
+    <li>缺陷與改進建議:<a href="https://github.com/gentoo-zh/Live-ISO/issues">Live-ISO issues</a>。</li>
+    <li>使用問題與討論:<a href="https://forum.gentoozh.org/">社群論壇</a>、<a href="https://t.me/gentoo_zh">Telegram 群</a>。</li>
+    <li>郵件:<a href="mailto:liveos@gentoozh.org">liveos@gentoozh.org</a>。</li>
+  </ul>
+  <p>新版建置通知:Telegram 頻道 <a href="https://t.me/gentoomirror">@gentoomirror</a>。</p>
+
+  <p class="back"><a href="/">← 返回下載</a></p>
+</div>
+
+<div data-langblock="en" hidden>
+  <h1 class="page-title">About this Live ISO</h1>
+  <p class="lead">A KDE Plasma 6 desktop Live ISO built weekly by the Gentoo-zh Community. The Chinese environment, input methods, fonts and graphics drivers are already set up. Run it live or install it to disk.</p>
+
+  <h2>Boot menu</h2>
+  <p>The top of the GRUB menu offers three languages: <b>Simplified Chinese / Traditional Chinese (Taiwan) / English</b>. The desktop, Firefox and the input method all follow your choice. The four entries below are each available in all three languages:</p>
+  <ul>
+    <li><b>Proprietary NVIDIA driver</b>: for hardware acceleration on newer cards. Secure Boot must be disabled first (see below).</li>
+    <li><b>Safe graphics mode</b>: nomodeset, for cards that will not light up otherwise.</li>
+    <li><b>Copy to RAM</b>: loads the whole image into memory, so the USB stick can be removed and things run faster.</li>
+    <li><b>Boot from local disk</b>: for when the USB stick was left plugged in.</li>
+  </ul>
+
+  <h2>Chinese input</h2>
+  <p>The default is Pinyin (Simplified). Right-click the input method tray icon and open "Schema" to enable or switch to Zhuyin, Wubi 86, Cangjie, Cantonese and others. A new schema has to be ticked in the list before first use.</p>
+  <ul>
+    <li><kbd>Ctrl</kbd> + <kbd>`</kbd> cycles through the enabled schemas.</li>
+    <li><kbd>Ctrl</kbd> + <kbd>Space</kbd> toggles the input method.</li>
+  </ul>
+
+  <h2>Graphics drivers</h2>
+  <p>The open-source nouveau driver is used by default and works out of the box. For hardware acceleration on RTX 20/30/40/50 cards, pick the proprietary NVIDIA entry in the boot menu.</p>
+  <p><b>The proprietary module is unsigned, so Secure Boot must be disabled in the BIOS first</b>, otherwise the kernel refuses to load it and you get a black screen or a hang. If you dual-boot Windows and want to keep Secure Boot, turn it off for the installation and back on afterwards, or sign the module and enroll a MOK key once installed. If the card still will not light up, use safe graphics mode.</p>
+
+  <h2>Installing to disk</h2>
+  <p>To understand the system properly, follow the <a href="https://wiki.gentoo.org/wiki/Handbook:AMD64">Gentoo Handbook</a> step by step. The desktop also ships a graphical installer: double-click "Install System" to launch Calamares, which follows the language you picked in the live session. When it finishes it clears the live-only settings (autologin and so on) and sets up the graphics driver on the installed system to match your choice.</p>
+  <h3>Filesystem and encryption</h3>
+  <p>The root filesystem is chosen on the partitioning page. The default is <b>btrfs</b>; xfs, ext4 and ZFS are also available.</p>
+  <ul>
+    <li><b>ZFS root</b>: choose ZFS and tick Encrypt to use ZFS native encryption (aes-256-gcm), booted by <b>ZFSBootMenu</b>. GRUB cannot read ZFS pools that use newer features or native encryption, so a ZFS root uses ZBM instead. You enter the passphrase twice at boot (once at ZBM, once in the system initramfs), which is expected.</li>
+    <li><b>LUKS full-disk encryption</b>: tick LUKS while partitioning xfs / ext4 / btrfs. It boots via GRUB and usually asks for the passphrase once.</li>
+  </ul>
+
+  <h2>Hardware requirements</h2>
+  <div class="specs"><span class="spec">x86-64</span><span class="spec">AVX2</span><span class="spec">CPU from 2013 or later</span></div>
+  <p>The image is built for x86-64-v3 and requires AVX2. Older CPUs cannot boot it.</p>
+  <p><b>Virtual machines</b>: VirtualBox usually cannot pass AVX2 through (the Hyper-V/WHP backend never does, and the native VT-x backend often does not either), so the image will not boot. Use KVM (<code>-cpu host</code>), native Hyper-V or VMware. Inside the guest, <code>grep -o avx2 /proc/cpuinfo</code> tells you for certain.</p>
+  <p>Login details and checksums are on the <a href="/">download page</a>. After installation, the <code>CPU_FLAGS_X86</code> compile setting is generated on first boot from your own CPU.</p>
+
+  <h2>Feedback</h2>
+  <ul>
+    <li>Bugs and suggestions: <a href="https://github.com/gentoo-zh/Live-ISO/issues">Live-ISO issues</a>.</li>
+    <li>Usage questions and discussion: <a href="https://forum.gentoozh.org/">community forum</a>, <a href="https://t.me/gentoo_zh">Telegram group</a>.</li>
+    <li>Email: <a href="mailto:liveos@gentoozh.org">liveos@gentoozh.org</a>.</li>
+  </ul>
+  <p>New-build notifications: Telegram channel <a href="https://t.me/gentoomirror">@gentoomirror</a>.</p>
+
+  <p class="back"><a href="/">← Back to downloads</a></p>
+</div>
+
+</main>
+
+<footer class="foot">
+  <span data-langblock-inline="zh-cn">本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社区</a> 的 Live ISO 下载镜像。</span>
+  <span data-langblock-inline="zh-tw" hidden>本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社群</a> 的 Live ISO 下載鏡像。</span>
+  <span data-langblock-inline="en" hidden>The Live ISO download mirror of the <a href="https://www.gentoo.org.cn/">Gentoo-zh Community</a>.</span>
+</footer>
+
+<script>
+/* 顶栏品牌与链接的非简体翻译(正文整段用 data-langblock)。引擎见 /assets/i18n.js。 */
+window.MIRROR_I18N = {
+  'zh-tw': { brand: 'Gentoo 中文社群 · 鏡像站', navDl: '下載' },
+  'en': { brand: 'Gentoo-zh Community · Mirror', navDl: 'Download' }
+};
+</script>
+<script src="/assets/i18n.js"></script>
+</body>
+</html>

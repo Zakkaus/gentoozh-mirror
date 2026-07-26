@@ -1,0 +1,20 @@
+name = "gentoozh-mirror"
+main = "src/index.js"
+compatibility_date = "2026-06-01"
+
+# 静态资产:about.html 与 /assets/*(public/ 下)。落地页 / 由 Worker 动态渲染,
+# public/ 里【不放】index.html,这样 / 会落到 Worker。
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# R2(只读):落地页即时列桶取最新 ISO + 历史版本。原生 binding,无密钥/无 S3 token。
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "gentoozh"
+
+# 允许把落地页模板作为文本模块 import 进 Worker(templates/index.html)
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
