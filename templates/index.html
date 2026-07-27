@@ -129,6 +129,7 @@ body { margin: 0; background: var(--bg); color: var(--fg-body); line-height: 1.7
 .creds { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: 0.86rem; color: var(--fg-soft); }
 .creds-label { margin-bottom: 0.55rem; }
 .creds-row { display: flex; flex-wrap: wrap; gap: 0.45rem 1.15rem; }
+.creds-row + .creds-row { margin-top: 0.4rem; }
 .cred { display: inline-flex; align-items: baseline; gap: 0.35rem; }
 .copy-chip { cursor: pointer; user-select: none; background: var(--chip); color: var(--fg); font-weight: 600;
              font-family: var(--mono); padding: 0.12rem 0.5rem; border-radius: 0.35rem; }
@@ -212,7 +213,10 @@ body { margin: 0; background: var(--bg); color: var(--fg-body); line-height: 1.7
       <div class="creds-row">
         <span class="cred"><span data-i18n="credUser">用户</span> <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
         <span class="cred"><span data-i18n="credPass">密码</span> <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
-        <span class="cred">Root <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
+      </div>
+      <div class="creds-row">
+        <span class="cred"><span data-i18n="credUser">用户</span> <code class="copy-chip" data-copy="root" role="button" tabindex="0">root</code></span>
+        <span class="cred"><span data-i18n="credPass">密码</span> <code class="copy-chip" data-copy="live" role="button" tabindex="0">live</code></span>
       </div>
     </div>
   </section>
