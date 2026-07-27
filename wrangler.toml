@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2026-06-01"
 
 # 静态资产:about.html 与 /assets/*(public/ 下)。落地页 / 由 Worker 动态渲染,
-# public/ 里【不放】index.html,这样 / 会落到 Worker。
+# public/ 里不放 index.html,这样 / 会落到 Worker。
 [assets]
 directory = "./public"
 binding = "ASSETS"
