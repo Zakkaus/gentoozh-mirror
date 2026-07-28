@@ -112,7 +112,7 @@ kbd { background:var(--card); color:var(--fg); border:1px solid var(--border); b
   <h3>文件系统与加密</h3>
   <p>分区页可选根文件系统,默认 <b>btrfs</b>,另有 xfs、ext4 与 ZFS。</p>
   <ul>
-    <li><b>ZFS 根</b>:选 ZFS 并勾选加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引导。GRUB 读不了带新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。开机需输两次密码(ZBM 一次、系统 initramfs 一次),属正常现象。</li>
+    <li><b>ZFS 根</b>:选 ZFS 并勾选加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引导。<b>口令至少 8 位</b>,因为这是 ZFS 原生加密的硬性要求,少于 8 位建池会被拒绝、安装中止。GRUB 读不了带新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。开机需输两次密码(ZBM 一次、系统 initramfs 一次),属正常现象。</li>
     <li><b>LUKS 全盘加密</b>:xfs / ext4 / btrfs 在分区时勾选 LUKS,由 GRUB 引导,通常只需输一次密码。</li>
   </ul>
 
@@ -162,7 +162,7 @@ kbd { background:var(--card); color:var(--fg); border:1px solid var(--border); b
   <h3>檔案系統與加密</h3>
   <p>分割區頁可選根檔案系統,預設 <b>btrfs</b>,另有 xfs、ext4 與 ZFS。</p>
   <ul>
-    <li><b>ZFS 根</b>:選 ZFS 並勾選加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引導。GRUB 讀不了帶新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。開機需輸兩次密碼(ZBM 一次、系統 initramfs 一次),屬正常現象。</li>
+    <li><b>ZFS 根</b>:選 ZFS 並勾選加密,即使用 ZFS 原生加密(aes-256-gcm),由 <b>ZFSBootMenu</b> 引導。<b>口令至少 8 位</b>,因為這是 ZFS 原生加密的硬性要求,少於 8 位建池會被拒絕、安裝中止。GRUB 讀不了帶新特性或原生加密的 ZFS 池,因此 ZFS 根改用 ZBM。開機需輸兩次密碼(ZBM 一次、系統 initramfs 一次),屬正常現象。</li>
     <li><b>LUKS 全碟加密</b>:xfs / ext4 / btrfs 在分割時勾選 LUKS,由 GRUB 引導,通常只需輸一次密碼。</li>
   </ul>
 
@@ -212,7 +212,7 @@ kbd { background:var(--card); color:var(--fg); border:1px solid var(--border); b
   <h3>Filesystem and encryption</h3>
   <p>The root filesystem is chosen on the partitioning page. The default is <b>btrfs</b>; xfs, ext4 and ZFS are also available.</p>
   <ul>
-    <li><b>ZFS root</b>: choose ZFS and tick Encrypt to use ZFS native encryption (aes-256-gcm), booted by <b>ZFSBootMenu</b>. GRUB cannot read ZFS pools that use newer features or native encryption, so a ZFS root uses ZBM instead. You enter the passphrase twice at boot (once at ZBM, once in the system initramfs), which is expected.</li>
+    <li><b>ZFS root</b>: choose ZFS and tick Encrypt to use ZFS native encryption (aes-256-gcm), booted by <b>ZFSBootMenu</b>. The passphrase must be <b>at least 8 characters</b>, because ZFS native encryption requires it and a shorter one makes pool creation fail and aborts the install. GRUB cannot read ZFS pools that use newer features or native encryption, so a ZFS root uses ZBM instead. You enter the passphrase twice at boot (once at ZBM, once in the system initramfs), which is expected.</li>
     <li><b>LUKS full-disk encryption</b>: tick LUKS while partitioning xfs / ext4 / btrfs. It boots via GRUB and usually asks for the passphrase once.</li>
   </ul>
 
