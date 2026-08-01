@@ -37,16 +37,22 @@ export default {
     if (hit) return hit;
 
     let body;
-    try {
-      body = route.page === 'about'
-        ? renderAbout(route.locale.code)
-        : renderIndex(route.locale.code, await readIsos(env));
-    } catch (err) {
-      // 读 R2 失败或还没有 ISO：给一句读得懂的话，并且不缓存——下一次请求要重试。
-      return new Response(t(route.locale.code, 'noIso'), {
-        status: 503,
-        headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
-      });
+    if (route.page === 'about') {
+      // 说明页不碰 R2，渲染不该被兜进「暂无 ISO」里：那样一个缺翻译的 bug 会被
+      // 伪装成没有镜像，看日志的人往桶里找问题。让它照常 500，错在哪就报哪。
+      body = renderAbout(route.locale.code);
+    } else {
+      let iso;
+      try {
+        iso = await readIsos(env);
+      } catch (err) {
+        // 读 R2 失败或还没有 ISO：给一句读得懂的话，并且不缓存，下一次请求要重试。
+        return new Response(t(route.locale.code, 'noIso'), {
+          status: 503,
+          headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+        });
+      }
+      body = renderIndex(route.locale.code, iso);
     }
 
     const resp = new Response(body, {
@@ -98,6 +104,8 @@ async function firstToken(env, key) {
 }
 
 export async function readIsos(env) {
+  // 单页最多 1000 个 key。发布脚本按 R2_KEEP 只留最近几版，离这个数很远，
+  // 所以不翻页；哪天桶里真堆到上千个 ISO，这里要先加 cursor 再谈别的。
   const listed = await env.BUCKET.list({ prefix: 'gig-os-' });
   const isos = (listed.objects || [])
     .filter(o => /^gig-os-\d{8}\.iso$/.test(o.key))
