@@ -1,0 +1,50 @@
+// 本地预览：用同一个 render.js 把六份文档写进 dist/，配一份假的 ISO 数据。
+//
+//   node scripts/preview.mjs [outdir]
+//
+// 走的是边缘会走的同一个函数，所以在浏览器里看到的字节和线上一致，只有 ISO 那几个值是假的。
+// 需要 Cloudflare 的部分（R2、边缘缓存）不在这里，那是 wrangler dev 的事。
+
+import { mkdirSync, writeFileSync, cpSync, rmSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { LOCALES } from '../src/i18n.js';
+import { renderIndex, renderAbout } from '../src/render.js';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const out = process.argv[2] || join(root, 'dist');
+
+// 形状照着真桶里的样子：文件名带日期、校验和是 64/32 位十六进制。
+const ISO = {
+  latest: {
+    key: 'gig-os-20260728.iso',
+    size: '4.7 GB',
+    date: '2026-07-28',
+    sha256: '9f2b41c8e0a7d365b18f4c2a90de77315caa6b0e4d81f9c37a25e6b8043fd192',
+    md5: 'c41d8fa3b57e29604bc0d5f1a8e73b62',
+  },
+  builds: [
+    { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28' },
+    { key: 'gig-os-20260721.iso', size: '4.7 GB', date: '2026-07-21' },
+    { key: 'gig-os-20260714.iso', size: '4.6 GB', date: '2026-07-14' },
+    { key: 'gig-os-20260707.iso', size: '4.6 GB', date: '2026-07-07' },
+  ],
+};
+
+rmSync(out, { recursive: true, force: true });
+mkdirSync(out, { recursive: true });
+cpSync(join(root, 'public'), out, { recursive: true });
+
+let n = 0;
+for (const l of LOCALES) {
+  const dir = l.path === '/' ? out : join(out, l.path);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, 'index.html'), renderIndex(l.code, ISO));
+  // 说明页在 /about（无扩展名），本地用目录 + index.html 模拟同一个 URL。
+  mkdirSync(join(dir, 'about'), { recursive: true });
+  writeFileSync(join(dir, 'about', 'index.html'), renderAbout(l.code));
+  n += 2;
+}
+
+console.log(`${n} 份文档 → ${out}`);
+for (const l of LOCALES) console.log(`  ${l.path.padEnd(8)} ${l.name}`);

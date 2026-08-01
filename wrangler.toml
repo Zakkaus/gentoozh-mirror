@@ -2,8 +2,8 @@ name = "gentoozh-mirror"
 main = "src/index.js"
 compatibility_date = "2026-06-01"
 
-# 静态资产:about.html 与 /assets/*(public/ 下)。落地页 / 由 Worker 动态渲染,
-# public/ 里不放 index.html,这样 / 会落到 Worker。
+# 静态资产只剩 /assets/*。三条语言路径的六份文档全部由 Worker 在边缘渲染,
+# public/ 里没有任何 HTML,所有页面请求都落到 Worker。
 [assets]
 directory = "./public"
 binding = "ASSETS"
@@ -13,8 +13,4 @@ binding = "ASSETS"
 binding = "BUCKET"
 bucket_name = "gentoozh"
 
-# 允许把落地页模板作为文本模块 import 进 Worker(templates/index.html)
-[[rules]]
-type = "Text"
-globs = ["**/*.html"]
-fallthrough = true
+# 模板不再是文本模块:页面由 src/render.js 直接拼,翻译在 src/i18n.js。

@@ -1,108 +1,118 @@
 // iso.gentoozh.org,Cloudflare Worker
-// 落地页 `/` 在边缘即时读 R2(gentoozh 桶)渲染:最新 ISO + 全部历史版本;
-// 下载链接指向 R2 自定义域 r2.gentoozh.org(零出口流量、可缓存)。
-// about.html 与 /assets/* 走 Worker 静态资产(public/)。
 //
-// 绑定(见 wrangler.toml):BUCKET = R2(gentoozh,只读用)、ASSETS = 静态资产。
-// 无任何密钥:R2 用原生 binding,不走 S3 token。
+// 三条语言路径，每条两页，全在边缘渲染成完整文档：
+//   /            /about            简体
+//   /zh-tw/      /zh-tw/about      繁体
+//   /en/         /en/about         英文
+//
+// ISO 数据（最新一份 + 全部历史 + 校验和）在边缘读 R2，下载链接指向 R2 自定义域
+// r2.gentoozh.org（零出口流量、可缓存）。/assets/* 走静态资产。
+//
+// 绑定见 wrangler.toml：BUCKET = R2（只读）、ASSETS = 静态资产。无任何密钥。
 
-import TEMPLATE from "../templates/index.html";
+import { LOCALES, negotiate, t } from './i18n.js';
+import { renderIndex, renderAbout } from './render.js';
 
-const R2_BASE = "https://r2.gentoozh.org";
+const CACHE_SECONDS = 60;
 
 export default {
   async fetch(request, env, ctx) {
-    if (request.method !== "GET" && request.method !== "HEAD") {
-      return new Response("Method Not Allowed", { status: 405 });
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return new Response('Method Not Allowed', { status: 405, headers: { allow: 'GET, HEAD' } });
     }
+
     const url = new URL(request.url);
-    if (url.pathname === "/" || url.pathname === "/index.html") {
-      // 抗 CC 关键:把渲染好的首页在边缘缓存 60s。被洪水般刷首页时,每 60s 只有第一个
-      // 请求真读 R2(list + 2 个 get = 3 个 op)并渲染,其余全是边缘缓存命中(0 R2 op、0 渲染)。
-      // 无论多少 IP 刷,首页的 R2 请求固定为每 60 秒一次,遭遇高频请求时首页照常在线。
-      const cache = caches.default;
-      const cacheKey = new Request(new URL("/", url), { method: "GET" });
-      const hit = await cache.match(cacheKey);
-      if (hit) return hit;
-      const resp = await renderIndex(env);
-      if (resp.status === 200) {
-        const cached = new Response(resp.body, resp);
-        cached.headers.set("cache-control", "public, max-age=60");
-        ctx.waitUntil(cache.put(cacheKey, cached.clone()));
-        return cached;
-      }
-      return resp; // 503(暂无 ISO)等不缓存
+    const path = url.pathname.replace(/\/index\.html$/, '/');
+
+    if (path.startsWith('/assets/')) return env.ASSETS.fetch(request);
+
+    const route = routeOf(path);
+    if (!route) return elsewhere(request);
+
+    // 抗 CC：渲染好的页面在边缘缓存 60 秒。被洪水般刷时，每 60 秒只有第一个请求真读 R2
+    // 并渲染，其余全是边缘缓存命中。缓存键带语言，三份文档各缓各的。
+    const cache = caches.default;
+    const key = new Request(new URL(pathOf(route), url), { method: 'GET' });
+    const hit = await cache.match(key);
+    if (hit) return hit;
+
+    let body;
+    try {
+      body = route.page === 'about'
+        ? renderAbout(route.locale.code)
+        : renderIndex(route.locale.code, await readIsos(env));
+    } catch (err) {
+      // 读 R2 失败或还没有 ISO：给一句读得懂的话，并且不缓存——下一次请求要重试。
+      return new Response(t(route.locale.code, 'noIso'), {
+        status: 503,
+        headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+      });
     }
-    // 其余路径(/about.html、/assets/*)交给静态资产(Cloudflare 自动缓存)
-    return env.ASSETS.fetch(request);
+
+    const resp = new Response(body, {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': `public, max-age=${CACHE_SECONDS}`,
+      },
+    });
+    // 同一个 URL 对所有人发同一份字节：语言由路径决定，不由 Accept-Language 决定，
+    // 否则边缘缓存会按 header 裂成好几份。
+    ctx.waitUntil(cache.put(key, resp.clone()));
+    return resp;
   },
 };
 
-function fmtSize(bytes) {
-  const n = Number(bytes) || 0;
-  const gb = n / (1024 ** 3);
-  if (gb >= 1) return gb.toFixed(1) + " GB";
-  return Math.round(n / (1024 ** 2)) + " MB";
+const pathOf = r => (r.page === 'about' ? r.locale.path + 'about' : r.locale.path);
+
+function routeOf(path) {
+  for (const l of LOCALES) {
+    if (path === l.path) return { locale: l, page: 'index' };
+    if (path === l.path + 'about' || path === l.path + 'about/') return { locale: l, page: 'about' };
+  }
+  return null;
 }
 
-function dateFromKey(key) {
-  const m = key.match(/^gig-os-(\d{4})(\d{2})(\d{2})\.iso$/);
-  return m ? `${m[1]}-${m[2]}-${m[3]}` : "";
+// 未知路径：送到读者自己语言的首页，而不是丢一个英文 404。
+// 只有这里用 Accept-Language，而且只决定「没指名时去哪一份」，不改已指名的链接。
+function elsewhere(request) {
+  const code = negotiate(request.headers.get('accept-language'));
+  const home = LOCALES.find(l => l.code === code).path;
+  return new Response(null, { status: 302, headers: { location: home, 'cache-control': 'no-store' } });
 }
+
+export const fmtSize = bytes => {
+  const n = Number(bytes) || 0;
+  const gb = n / 1024 ** 3;
+  return gb >= 1 ? gb.toFixed(1) + ' GB' : Math.round(n / 1024 ** 2) + ' MB';
+};
+
+export const dateFromKey = key => {
+  const m = key.match(/^gig-os-(\d{4})(\d{2})(\d{2})\.iso$/);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
+};
 
 async function firstToken(env, key) {
   const o = await env.BUCKET.get(key);
-  if (!o) return "";
-  const t = (await o.text()).trim();
-  return t.split(/\s+/)[0] || "";
+  if (!o) return '';
+  return (await o.text()).trim().split(/\s+/)[0] || '';
 }
 
-function esc(s) {
-  return String(s).replace(/[&<>"]/g, (c) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
-  );
-}
-
-async function renderIndex(env) {
-  const listed = await env.BUCKET.list({ prefix: "gig-os-" });
+export async function readIsos(env) {
+  const listed = await env.BUCKET.list({ prefix: 'gig-os-' });
   const isos = (listed.objects || [])
-    .filter((o) => /^gig-os-\d{8}\.iso$/.test(o.key))
-    .sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0)); // 新 → 旧
+    .filter(o => /^gig-os-\d{8}\.iso$/.test(o.key))
+    .sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));   // 新 → 旧
 
-  if (isos.length === 0) {
-    return new Response("尚无可用 ISO / No ISO available yet.", {
-      status: 503,
-      headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
-    });
-  }
+  if (isos.length === 0) throw new Error('no iso in bucket');
 
   const latest = isos[0];
-  const [sha, md5] = await Promise.all([
-    firstToken(env, latest.key + ".sha256"),
-    firstToken(env, latest.key + ".md5"),
+  const [sha256, md5] = await Promise.all([
+    firstToken(env, latest.key + '.sha256'),
+    firstToken(env, latest.key + '.md5'),
   ]);
 
-  const history = isos
-    .map(
-      (o) =>
-        `      <tr><td class="f"><a href="${R2_BASE}/${encodeURIComponent(o.key)}">${esc(o.key)}</a></td>` +
-        `<td class="s">${fmtSize(o.size)}</td><td class="d">${esc(dateFromKey(o.key))}</td></tr>`
-    )
-    .join("\n");
-
-  const html = TEMPLATE
-    .split("@@ISO_NAME@@").join(esc(latest.key))
-    .split("@@ISO_SIZE@@").join(esc(fmtSize(latest.size)))
-    .split("@@ISO_DATE@@").join(esc(dateFromKey(latest.key)))
-    .split("@@ISO_SHA256@@").join(esc(sha))
-    .split("@@ISO_MD5@@").join(esc(md5))
-    .split("@@ISO_HISTORY@@").join(history);
-
-  return new Response(html, {
-    headers: {
-      "content-type": "text/html; charset=utf-8",
-      // 落地页便宜、Worker 每次请求实时读 R2;仅给浏览器 60s 缓存,新盘上传后很快反映
-      "cache-control": "public, max-age=60",
-    },
-  });
+  return {
+    latest: { key: latest.key, size: fmtSize(latest.size), date: dateFromKey(latest.key), sha256, md5 },
+    builds: isos.map(o => ({ key: o.key, size: fmtSize(o.size), date: dateFromKey(o.key) })),
+  };
 }

@@ -1,0 +1,218 @@
+/* 镜像站样式。规则的原因在 DESIGN.md，这里只留下一句话就能说清的那部分。 */
+
+/* ── token 层 ─────────────────────────────────────────────────────────────
+   一个 token 一次声明。light-dark() 把两套值放在同一行，取哪套由 color-scheme 决定，
+   所以深色不需要第二个块。原来那份把深色调色板写了两遍（属性覆盖一遍、媒体查询一遍），
+   八个值两份副本，改一处就漏一处。 */
+:root {
+  color-scheme: light dark;
+
+  /* 强调色只有这一个色相，深浅两档靠明度。 */
+  --accent:      light-dark(hsl(252 27% 38%), hsl(252 32% 64%));
+  --accent-weak: light-dark(hsl(252 40% 96%), hsl(252 22% 14%));
+
+  --bg:       light-dark(#ffffff, #111113);
+  --card:     light-dark(#ffffff, #1b1b1f);
+  --fg:       light-dark(#111827, #f3f4f6);
+  --fg-body:  light-dark(#374151, #d1d5db);
+  --fg-soft:  light-dark(#5b6472, #9ca3af);
+  --border:   light-dark(#e5e7eb, #383840);
+  --chip:     light-dark(#f1f0f4, #26262c);
+  --hover:    light-dark(#f1f0f4, #26262c);
+  --on-accent: light-dark(#ffffff, #14121c);
+
+  /* 阴影色单独给，不挂在 --fg 上：--fg 跟着主题翻，深色下就成了一圈白光晕。
+     深色里抬升本来就不靠大阴影——面板比页面亮一档、加一条边框已经说明了层级，
+     阴影只负责把它和底下的内容分开，所以更小更实。light-dark() 只回颜色，
+     所以几何写在用它的地方，两个主题共用一套。 */
+  --shadow-color: light-dark(rgb(17 24 39 / 0.14), rgb(0 0 0 / 0.55));
+
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+
+  --r-control: 0.4rem;
+  --r-panel: 0.85rem;
+  --measure: 720px;
+}
+/* 明确选过的主题：只改 color-scheme，上面的 light-dark() 跟着换，没有第二份调色板。 */
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"]  { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0; background: var(--bg); color: var(--fg-body); line-height: 1.7;
+  font-family: var(--sans); -webkit-font-smoothing: antialiased;
+}
+
+/* 一处焦点环，全站统一。任何控件都不许自己关掉它。 */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-control); }
+
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--card); color: var(--fg); border: 1px solid var(--border);
+  padding: 0.5rem 0.9rem; border-radius: var(--r-control);
+}
+.skip:focus { left: 0.5rem; top: 0.5rem; }
+
+/* ── 顶栏 ──────────────────────────────────────────────────────────────
+   不用 backdrop-filter：它让底下文字的对比度随内容变化，量不出一个数，
+   forced-colors 下整层还会消失。92% 不透明的 token 背景 + 下边框，两个主题都能量。 */
+.nav {
+  position: sticky; top: 0; z-index: 40;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+}
+.nav-inner {
+  max-width: var(--measure); margin: 0 auto; padding: 0.55rem 1.25rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+}
+.nav-brand { display: inline-flex; align-items: center; gap: 0.55rem; text-decoration: none; color: var(--fg); min-width: 0; }
+.nav-brand img { width: 28px; height: 28px; flex: none; }
+.nav-title {
+  font-weight: 700; font-size: 0.95rem; letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nav-controls { display: inline-flex; align-items: center; gap: 0.25rem; flex: none; }
+.nav-link {
+  color: var(--fg-soft); text-decoration: none; font-size: 0.86rem; font-weight: 600;
+  padding: 0.32rem 0.5rem; border-radius: var(--r-control); white-space: nowrap;
+}
+.nav-link:hover { background: var(--hover); color: var(--fg); }
+.nav-link[aria-current] { color: var(--accent); }
+
+/* 语言：三种以上收起成一个触发器开菜单，两种才平铺。这一站是三种。
+   触发器是图示，所以名字必须自己给——文字节点没有了就没人替它命名。 */
+.disclosure { position: relative; }
+.disclosure > summary {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: var(--r-control);
+  color: var(--fg-soft); cursor: pointer; list-style: none;
+}
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure > summary:hover { background: var(--hover); color: var(--fg); }
+.disclosure[open] > summary { background: var(--hover); color: var(--fg); }
+.disclosure > div {
+  position: absolute; right: 0; top: calc(100% + 6px); min-width: 9.5rem;
+  background: var(--card); border: 1px solid var(--border); border-radius: 0.6rem;
+  padding: 0.3rem; display: flex; flex-direction: column; gap: 0.1rem; z-index: 50;
+  box-shadow: 0 6px 18px var(--shadow-color);
+}
+.disclosure a, .disclosure button {
+  display: flex; align-items: center; gap: 0.55rem; width: 100%;
+  border: none; background: transparent; color: var(--fg-body);
+  font: inherit; font-size: 0.86rem; padding: 0.42rem 0.6rem;
+  border-radius: var(--r-control); cursor: pointer; text-align: start; text-decoration: none;
+}
+.disclosure a:hover, .disclosure button:hover { background: var(--hover); }
+.disclosure [aria-current], .disclosure [aria-checked="true"] { color: var(--accent); font-weight: 600; }
+/* 尺寸由容器给，不写死在 svg 上：换一个图不用改几何。 */
+.icon { width: 17px; height: 17px; flex: none; }
+
+@media (max-width: 26rem) { .nav-title { display: none; } }
+
+/* ── 内容 ────────────────────────────────────────────────────────────── */
+.wrap { max-width: var(--measure); margin: 0 auto; padding: 2.6rem 1.25rem 1rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em;
+  color: var(--accent); margin: 0 0 0.7rem; font-weight: 600;
+}
+/* 标题只在这一页放宽字号，别的地方走字阶。CJK 与拉丁的行高不同，所以按语言给。 */
+.title { font-size: 2.05rem; line-height: 1.18; letter-spacing: -0.02em; font-weight: 700; color: var(--fg); margin: 0 0 0.75rem; }
+:root:lang(en) .title { line-height: 1.12; }
+.lead { font-size: 1rem; line-height: 1.8; color: var(--fg-body); margin: 0 0 2.1rem; max-width: 54ch; }
+
+/* 当前版本：这一页的主体。产物名就是产品名，用等宽大字直接当标题。 */
+.build {
+  border: 1px solid var(--border); border-radius: var(--r-panel);
+  background: color-mix(in srgb, var(--accent) 5%, var(--card));
+  padding: 1.5rem 1.6rem;
+}
+.build-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--fg-soft); text-transform: uppercase; margin: 0 0 0.5rem; }
+/* 文件名是数据，断在哪都比溢出好。 */
+.build-name { font-family: var(--mono); font-size: 1.3rem; font-weight: 600; color: var(--fg); margin: 0 0 0.55rem; word-break: break-all; letter-spacing: -0.01em; }
+.build-meta { font-family: var(--mono); font-size: 0.82rem; color: var(--fg-soft); margin: 0 0 1.3rem; display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; }
+
+.btn {
+  display: inline-block; background: var(--accent); color: var(--on-accent);
+  font-weight: 600; font-size: 1rem; padding: 0.72rem 1.7rem;
+  border-radius: 0.55rem; text-decoration: none;
+}
+.btn:hover { background: color-mix(in srgb, var(--accent) 88%, var(--fg)); }
+
+.hashes { margin-top: 1.35rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
+.hash-row { display: flex; gap: 0.6rem; align-items: baseline; font-family: var(--mono); font-size: 0.78rem; color: var(--fg-soft); margin-bottom: 0.35rem; }
+.hash-key { flex: none; font-weight: 600; color: var(--fg-body); }
+.hash-val { word-break: break-all; overflow-wrap: anywhere; }
+.hash-row a { color: var(--accent); text-decoration: none; flex: none; }
+.hash-row a:hover { text-decoration: underline; }
+.verify { font-size: 0.8rem; color: var(--fg-soft); margin: 0.6rem 0 0; }
+
+.creds { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); font-size: 0.86rem; color: var(--fg-soft); }
+.creds-label { margin-bottom: 0.55rem; }
+.creds-row { display: flex; flex-wrap: wrap; gap: 0.45rem 1.15rem; }
+.creds-row + .creds-row { margin-top: 0.4rem; }
+.cred { display: inline-flex; align-items: baseline; gap: 0.35rem; }
+/* 真的 <button>：Enter、Space、焦点环都是免费的，不用手写键盘处理。 */
+.copy {
+  font-family: var(--mono); font-size: inherit; font-weight: 600;
+  background: var(--chip); color: var(--fg); border: 1px solid transparent;
+  padding: 0.12rem 0.5rem; border-radius: 0.35rem; cursor: pointer;
+}
+.copy:hover { border-color: var(--accent); }
+
+.req { margin-top: 1.9rem; padding-top: 1.3rem; border-top: 1px solid var(--border); }
+.req-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; color: var(--fg); margin: 0 0 0.75rem; }
+/* 规格标签换行成第二行，不横向滚：它们是并列的短语，断行读得通。 */
+.specs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
+.spec { font-family: var(--mono); font-size: 0.78rem; color: var(--fg-body); background: var(--card); border: 1px solid var(--border); border-radius: 0.35rem; padding: 0.22rem 0.58rem; }
+.req-body { font-size: 0.86rem; line-height: 1.75; color: var(--fg-body); margin: 0; }
+.req-body code { font-family: var(--mono); font-size: 0.92em; }
+
+.features { margin-top: 1.1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.9rem; }
+.feature { border: 1px solid var(--border); border-radius: 0.55rem; padding: 0.95rem 1.1rem; background: var(--card); }
+.feature h2 { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin: 0 0 0.35rem; }
+.feature p { font-size: 0.85rem; line-height: 1.7; color: var(--fg-body); margin: 0; }
+.feature a, .req-body a, .foot a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.feature a:hover, .req-body a:hover, .foot a:hover { text-decoration: underline; }
+
+/* 历史版本：对齐的清单。宽度不够时日期列先走，文件名和大小是核对时真正要看的。 */
+.builds { margin-top: 2rem; }
+.builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
+.builds table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.84rem; }
+.builds td { padding: 0.5rem 0; border-top: 1px solid var(--border); }
+.builds tr:first-child td { border-top: none; }
+.builds td.f a { color: var(--accent); text-decoration: none; font-weight: 600; word-break: break-all; }
+.builds td.f a:hover { text-decoration: underline; }
+.builds td.s, .builds td.d { text-align: end; color: var(--fg-soft); white-space: nowrap; padding-inline-start: 0.9rem; }
+@media (max-width: 29rem) { .builds td.d { display: none; } }
+
+.foot { max-width: var(--measure); margin: 2.2rem auto 0; padding: 1.3rem 1.25rem 2.6rem; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--fg-soft); }
+
+/* ── 说明页 ────────────────────────────────────────────────────────── */
+.page-title { font-size: 1.7rem; line-height: 1.25; font-weight: 700; color: var(--fg); margin: 0 0 1.2rem; }
+.prose h2 { font-size: 1.05rem; font-weight: 700; color: var(--fg); margin: 2rem 0 0.6rem; }
+.prose h3 { font-size: 0.92rem; font-weight: 700; color: var(--fg); margin: 1.4rem 0 0.45rem; }
+.prose p, .prose li { font-size: 0.92rem; line-height: 1.8; color: var(--fg-body); }
+.prose a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.prose a:hover { text-decoration: underline; }
+.prose code { font-family: var(--mono); font-size: 0.9em; background: var(--chip); padding: 0.08rem 0.32rem; border-radius: 0.25rem; }
+/* 代码块自己滚，不把文档推宽。 */
+.prose pre { font-family: var(--mono); font-size: 0.82rem; background: var(--chip); padding: 0.8rem 1rem; border-radius: var(--r-control); overflow-x: auto; }
+.prose pre code { background: none; padding: 0; }
+
+/* 复制反馈是 role="status"，读屏听得见。原来那个 aria-hidden 等于对读屏用户什么都没发生。 */
+#toast {
+  position: fixed; inset-block-end: 1.6rem; inset-inline-start: 50%; transform: translateX(-50%);
+  background: var(--accent); color: var(--on-accent); font-size: 0.84rem; font-weight: 600;
+  padding: 0.45rem 1rem; border-radius: 0.5rem; z-index: 60;
+}
+#toast:empty { display: none; }
+
+/* 动效在查询里声明，不在查询外面把时长压到零——那会留下一个动了但看不见的中间态。 */
+@media (prefers-reduced-motion: no-preference) {
+  .btn { transition: background 0.15s ease; }
+  #toast { animation: toast-in 0.18s ease; }
+  @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(0.5rem); } }
+}
