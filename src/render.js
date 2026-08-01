@@ -178,7 +178,10 @@ ${history}
 
 export function renderAbout(code) {
   const T = k => t(code, k);
+  // 正文里指回落地页的链接是 @@HOME@@，在这里换成本语言的首页。写死 / 的话，
+  // 英文和繁体读者点「返回下载」会掉进简体页。
+  const body = ABOUT[code].split('@@HOME@@').join(here(code).path);
   return head(code, 'about', T('aboutTitle') + ' · ' + T('brand'), T('aboutDesc')) +
     chrome(code, 'about') +
-    `\n<main class="wrap prose" id="main">\n${ABOUT[code]}\n</main>\n` + foot(code);
+    `\n<main class="wrap prose" id="main">\n${body}\n</main>\n` + foot(code);
 }
