@@ -1,5 +1,5 @@
 {
-  "name": "gentoozh-mirror",
+  "name": "gigos-mirror",
   "private": true,
   "description": "mirror.gentoozh.org:Cloudflare Worker:边缘读 R2 渲染 Live ISO 下载落地页",
   "scripts": {
@@ -8,5 +8,6 @@
   },
   "devDependencies": {
     "wrangler": "^4"
-  }
+  },
+  "type": "module"
 }
