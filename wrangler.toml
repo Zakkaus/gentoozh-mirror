@@ -2,15 +2,12 @@ name = "gentoozh-mirror"
 main = "src/index.js"
 compatibility_date = "2026-06-01"
 
-# 静态资产只剩 /assets/*。三条语言路径的六份文档全部由 Worker 在边缘渲染,
-# public/ 里没有任何 HTML,所有页面请求都落到 Worker。
+# public/ 下不放 HTML，所有页面请求都落到 Worker。
 [assets]
 directory = "./public"
 binding = "ASSETS"
 
-# R2(只读):落地页即时列桶取最新 ISO + 历史版本。原生 binding,无密钥/无 S3 token。
+# R2 只读，用于列出 ISO 与校验和。
 [[r2_buckets]]
 binding = "BUCKET"
 bucket_name = "gentoozh"
-
-# 模板不再是文本模块:页面由 src/render.js 直接拼,翻译在 src/i18n.js。

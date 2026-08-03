@@ -1,7 +1,4 @@
-// 三份消息目录，一份一种语言。渲染在边缘完成，所以这些串永远不会到浏览器里去等脚本换。
-//
-// 加一门语言：在 LOCALES 里加一项，补一份目录，补一份说明正文，别处不用动。
-// 缺一个键不会在页面上显示 undefined：npm run check 在构建前就报，t() 在运行期直接抛。
+// 语言表与消息目录。加一门语言：LOCALES 加一项，补一份目录，补一份说明正文。
 
 export const LOCALES = [
   { code: 'zh-cn', path: '/',        name: '简体中文', short: '简', dir: 'ltr' },
@@ -139,8 +136,7 @@ export const MESSAGES = {
 export function t(locale, key) {
   const m = MESSAGES[locale] || MESSAGES[DEFAULT_LOCALE];
   const v = m[key];
-  // 缺键在这里就炸，而不是在页面上显示 undefined。scripts/check.mjs 把六份文档
-  // 整个渲染一遍，所以同一条在构建前就会先响。
+  // 缺键直接抛，不让 undefined 进页面；npm run check 会先在构建前触发同一条。
   if (v === undefined) throw new Error(`missing message: ${locale}.${key}`);
   return v;
 }
@@ -152,9 +148,8 @@ export function localeOf(pathname) {
   return LOCALES.find(l => l.code === DEFAULT_LOCALE);
 }
 
-// Accept-Language 只在未知路径上用一次，决定把人送到哪一份首页（见 index.js 的
-// elsewhere）。已经指名语言的路径一律照路径走，不看这个头：分享出去的链接不该跟着
-// 收链接那个人的浏览器跑，边缘缓存也不该按 header 裂开。
+// 仅供 index.js 的 elsewhere 判断未知路径的落点。已指名语言的路径一律照路径走，
+// 因为分享出去的链接不应随收链接者的浏览器变化，边缘缓存也不应按 header 分裂。
 export function negotiate(header) {
   const want = String(header || '').toLowerCase();
   if (/(^|,|\s)en\b/.test(want) && !/zh/.test(want)) return 'en';

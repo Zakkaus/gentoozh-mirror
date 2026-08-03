@@ -1,13 +1,13 @@
-/* 镜像站样式。规则的原因在 DESIGN.md，这里只留下一句话就能说清的那部分。 */
+/* 规则的原因见 DESIGN.md，这里只记一句话能说清的约束。 */
 
-/* ── token 层 ─────────────────────────────────────────────────────────────
+/* token 层
    一个 token 一次声明。light-dark() 把两套值放在同一行，取哪套由 color-scheme 决定，
    所以深色不需要第二个块。原来那份把深色调色板写了两遍（属性覆盖一遍、媒体查询一遍），
    八个值两份副本，改一处就漏一处。 */
 :root {
   color-scheme: light dark;
 
-  /* 强调色只有这一个色相，深浅两档靠明度。 */
+  /* 强调色只用这一个色相，深浅两档靠明度区分。 */
   --accent:      light-dark(hsl(252 27% 38%), hsl(252 32% 64%));
   --accent-weak: light-dark(hsl(252 40% 96%), hsl(252 22% 14%));
 
@@ -21,10 +21,8 @@
   --hover:    light-dark(#f1f0f4, #26262c);
   --on-accent: light-dark(#ffffff, #14121c);
 
-  /* 阴影色单独给，不挂在 --fg 上：--fg 跟着主题翻，深色下就成了一圈白光晕。
-     深色里抬升本来就不靠大阴影——面板比页面亮一档、加一条边框已经说明了层级，
-     阴影只负责把它和底下的内容分开，所以更小更实。light-dark() 只回颜色，
-     所以几何写在用它的地方，两个主题共用一套。 */
+  /* 阴影色单列，不挂在 --fg 上：--fg 随主题翻转，深色下会变成白色光晕。
+     light-dark() 只返回颜色，几何写在使用处，两个主题共用一套。 */
   --shadow-color: light-dark(rgb(17 24 39 / 0.14), rgb(0 0 0 / 0.55));
 
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -34,7 +32,7 @@
   --r-panel: 0.85rem;
   --measure: 720px;
 }
-/* 明确选过的主题：只改 color-scheme，上面的 light-dark() 跟着换，没有第二份调色板。 */
+/* 显式主题只改 color-scheme，light-dark() 随之取值，不存在第二份调色板。 */
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"]  { color-scheme: dark; }
 
@@ -45,7 +43,7 @@ body {
   font-family: var(--sans); -webkit-font-smoothing: antialiased;
 }
 
-/* 一处焦点环，全站统一。任何控件都不许自己关掉它。 */
+/* 全站唯一焦点环，控件不得自行关闭。 */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--r-control); }
 
 .skip {
@@ -55,7 +53,7 @@ body {
 }
 .skip:focus { left: 0.5rem; top: 0.5rem; }
 
-/* ── 顶栏 ──────────────────────────────────────────────────────────────
+/* 顶栏
    不用 backdrop-filter：它让底下文字的对比度随内容变化，量不出一个数，
    forced-colors 下整层还会消失。92% 不透明的 token 背景 + 下边框，两个主题都能量。 */
 .nav {
@@ -81,8 +79,7 @@ body {
 .nav-link:hover { background: var(--hover); color: var(--fg); }
 .nav-link[aria-current] { color: var(--accent); }
 
-/* 语言：三种以上收起成一个触发器开菜单，两种才平铺。这一站是三种。
-   触发器是图示，所以名字必须自己给——文字节点没有了就没人替它命名。 */
+/* 三种以上语言收进菜单，两种才平铺。触发器是图示，必须显式给可及名称。 */
 .disclosure { position: relative; }
 .disclosure > summary {
   display: inline-flex; align-items: center; justify-content: center;
@@ -106,31 +103,31 @@ body {
 }
 .disclosure a:hover, .disclosure button:hover { background: var(--hover); }
 .disclosure [aria-current], .disclosure [aria-checked="true"] { color: var(--accent); font-weight: 600; }
-/* 尺寸由容器给，不写死在 svg 上：换一个图不用改几何。 */
+/* 尺寸由容器决定，不写进 svg。 */
 .icon { width: 17px; height: 17px; flex: none; }
 
 @media (max-width: 26rem) { .nav-title { display: none; } }
 
-/* ── 内容 ────────────────────────────────────────────────────────────── */
+/* 内容 */
 .wrap { max-width: var(--measure); margin: 0 auto; padding: 2.6rem 1.25rem 1rem; }
 
 .eyebrow {
   font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.06em;
   color: var(--accent); margin: 0 0 0.7rem; font-weight: 600;
 }
-/* 标题只在这一页放宽字号，别的地方走字阶。CJK 与拉丁的行高不同，所以按语言给。 */
+/* CJK 与拉丁行高不同，按语言分别给值。 */
 .title { font-size: 2.05rem; line-height: 1.18; letter-spacing: -0.02em; font-weight: 700; color: var(--fg); margin: 0 0 0.75rem; }
 :root:lang(en) .title { line-height: 1.12; }
 .lead { font-size: 1rem; line-height: 1.8; color: var(--fg-body); margin: 0 0 2.1rem; max-width: 54ch; }
 
-/* 当前版本：这一页的主体。产物名就是产品名，用等宽大字直接当标题。 */
+/* 当前版本是本页主体，产物名用等宽大字作标题。 */
 .build {
   border: 1px solid var(--border); border-radius: var(--r-panel);
   background: color-mix(in srgb, var(--accent) 5%, var(--card));
   padding: 1.5rem 1.6rem;
 }
 .build-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--fg-soft); text-transform: uppercase; margin: 0 0 0.5rem; }
-/* 文件名是数据，断在哪都比溢出好。 */
+/* 文件名是数据，允许任意位置断行，不得溢出。 */
 .build-name { font-family: var(--mono); font-size: 1.3rem; font-weight: 600; color: var(--fg); margin: 0 0 0.55rem; word-break: break-all; letter-spacing: -0.01em; }
 .build-meta { font-family: var(--mono); font-size: 0.82rem; color: var(--fg-soft); margin: 0 0 1.3rem; display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; }
 
@@ -154,7 +151,7 @@ body {
 .creds-row { display: flex; flex-wrap: wrap; gap: 0.45rem 1.15rem; }
 .creds-row + .creds-row { margin-top: 0.4rem; }
 .cred { display: inline-flex; align-items: baseline; gap: 0.35rem; }
-/* 真的 <button>：Enter、Space、焦点环都是免费的，不用手写键盘处理。 */
+/* 用 <button> 换取 Enter、Space 与焦点环，无需自写键盘处理。 */
 .copy {
   font-family: var(--mono); font-size: inherit; font-weight: 600;
   background: var(--chip); color: var(--fg); border: 1px solid transparent;
@@ -164,7 +161,7 @@ body {
 
 .req { margin-top: 1.9rem; padding-top: 1.3rem; border-top: 1px solid var(--border); }
 .req-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; color: var(--fg); margin: 0 0 0.75rem; }
-/* 规格标签换行成第二行，不横向滚：它们是并列的短语，断行读得通。 */
+/* 规格标签换行而非横向滚动。 */
 .specs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
 .spec { font-family: var(--mono); font-size: 0.78rem; color: var(--fg-body); background: var(--card); border: 1px solid var(--border); border-radius: 0.35rem; padding: 0.22rem 0.58rem; }
 .req-body { font-size: 0.86rem; line-height: 1.75; color: var(--fg-body); margin: 0; }
@@ -177,7 +174,7 @@ body {
 .feature a, .req-body a, .foot a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .feature a:hover, .req-body a:hover, .foot a:hover { text-decoration: underline; }
 
-/* 历史版本：对齐的清单。宽度不够时日期列先走，文件名和大小是核对时真正要看的。 */
+/* 宽度不足时先隐藏日期列，文件名与大小是核对所需。 */
 .builds { margin-top: 2rem; }
 .builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
 .builds table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.84rem; }
@@ -190,7 +187,7 @@ body {
 
 .foot { max-width: var(--measure); margin: 2.2rem auto 0; padding: 1.3rem 1.25rem 2.6rem; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--fg-soft); }
 
-/* ── 说明页 ────────────────────────────────────────────────────────── */
+/* 说明页 */
 .page-title { font-size: 1.7rem; line-height: 1.25; font-weight: 700; color: var(--fg); margin: 0 0 1.2rem; }
 .prose h2 { font-size: 1.05rem; font-weight: 700; color: var(--fg); margin: 2rem 0 0.6rem; }
 .prose h3 { font-size: 0.92rem; font-weight: 700; color: var(--fg); margin: 1.4rem 0 0.45rem; }
@@ -198,11 +195,11 @@ body {
 .prose a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .prose a:hover { text-decoration: underline; }
 .prose code { font-family: var(--mono); font-size: 0.9em; background: var(--chip); padding: 0.08rem 0.32rem; border-radius: 0.25rem; }
-/* 代码块自己滚，不把文档推宽。 */
+/* 代码块自身滚动，不撑宽文档。 */
 .prose pre { font-family: var(--mono); font-size: 0.82rem; background: var(--chip); padding: 0.8rem 1rem; border-radius: var(--r-control); overflow-x: auto; }
 .prose pre code { background: none; padding: 0; }
 
-/* 复制反馈是 role="status"，读屏听得见。原来那个 aria-hidden 等于对读屏用户什么都没发生。 */
+/* 复制反馈用 role="status"，屏幕阅读器可播报。 */
 #toast {
   position: fixed; inset-block-end: 1.6rem; inset-inline-start: 50%; transform: translateX(-50%);
   background: var(--accent); color: var(--on-accent); font-size: 0.84rem; font-weight: 600;
@@ -210,7 +207,7 @@ body {
 }
 #toast:empty { display: none; }
 
-/* 动效在查询里声明，不在查询外面把时长压到零——那会留下一个动了但看不见的中间态。 */
+/* 动效在媒体查询内声明，不在查询外把时长压到零，否则留下看不见的中间态。 */
 @media (prefers-reduced-motion: no-preference) {
   .btn { transition: background 0.15s ease; }
   #toast { animation: toast-in 0.18s ease; }

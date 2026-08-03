@@ -1,9 +1,6 @@
-// 本地预览：用同一个 render.js 把六份文档写进 dist/，配一份假的 ISO 数据。
+// 本地预览：node scripts/preview.mjs [outdir]
 //
-//   node scripts/preview.mjs [outdir]
-//
-// 走的是边缘会走的同一个函数，所以在浏览器里看到的字节和线上一致，只有 ISO 那几个值是假的。
-// 需要 Cloudflare 的部分（R2、边缘缓存）不在这里，那是 wrangler dev 的事。
+// 与线上共用 render.js，只有 ISO 数据是假的。R2 与边缘缓存要用 wrangler dev。
 
 import { mkdirSync, writeFileSync, cpSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -14,7 +11,7 @@ import { renderIndex, renderAbout } from '../src/render.js';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = process.argv[2] || join(root, 'dist');
 
-// 形状照着真桶里的样子：文件名带日期、校验和是 64/32 位十六进制。
+// 形状照真实桶内对象。
 const ISO = {
   latest: {
     key: 'gig-os-20260728.iso',
@@ -40,7 +37,7 @@ for (const l of LOCALES) {
   const dir = l.path === '/' ? out : join(out, l.path);
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'index.html'), renderIndex(l.code, ISO));
-  // 说明页在 /about（无扩展名），本地用目录 + index.html 模拟同一个 URL。
+  // 线上 /about 无扩展名，本地用目录加 index.html 模拟同一 URL。
   mkdirSync(join(dir, 'about'), { recursive: true });
   writeFileSync(join(dir, 'about', 'index.html'), renderAbout(l.code));
   n += 2;

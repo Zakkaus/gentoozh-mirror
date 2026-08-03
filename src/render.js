@@ -1,7 +1,5 @@
-// 渲染：一种语言一份完整文档。Worker 和本地预览走同一个函数，所以你在本地看到的
-// 就是边缘会发出去的那份字节。
-//
-// 没有运行期换字：语言在路径里，文本在标记里，lang 从第一个字节就是对的。
+// 渲染一份完整文档。Worker、本地预览、构建体检共用这里，输出字节一致。
+// 设计规则的原因在 DESIGN.md。
 
 import { LOCALES, DEFAULT_LOCALE, t } from './i18n.js';
 import { ABOUT } from './content-about.js';
@@ -13,11 +11,10 @@ const SITE = 'https://iso.gentoozh.org';
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 
-// 主题在第一次绘制之前定下来。语言不用管——它在路径里。
+// 主题在首帧之前定下，避免闪一下再翻色。语言在路径里，不需要脚本。
 const EARLY = `(function(){try{var t=localStorage.getItem('mirror-theme');
 if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
 
-// 三档主题各对哪个 lucide 名字。
 const THEME_ICON = { light: 'sun', dark: 'moon', system: 'monitor' };
 
 const here = code => LOCALES.find(l => l.code === code) || LOCALES[0];
@@ -105,7 +102,7 @@ export function renderIndex(code, iso) {
     `<td class="s">${esc(b.size)}</td><td class="d">${esc(b.date)}</td></tr>`
   ).join('\n');
 
-  // 复制按钮的名字带上要复制的值：读屏用户听到的不能是三个一模一样的「复制」。
+  // 可及名称带上要复制的值，否则四个按钮的读屏名称完全相同。
   const chip = (what, v) =>
     `<button type="button" class="copy" data-copy="${esc(v)}" aria-label="${esc(T('copyOf')(T(what), v))}">${esc(v)}</button>`;
 
@@ -178,8 +175,7 @@ ${history}
 
 export function renderAbout(code) {
   const T = k => t(code, k);
-  // 正文里指回落地页的链接是 @@HOME@@，在这里换成本语言的首页。写死 / 的话，
-  // 英文和繁体读者点「返回下载」会掉进简体页。
+  // 正文用 @@HOME@@ 占位，在这里换成本语言首页；写死 / 会让非简体读者掉回简体页。
   const body = ABOUT[code].split('@@HOME@@').join(here(code).path);
   return head(code, 'about', T('aboutTitle') + ' · ' + T('brand'), T('aboutDesc')) +
     chrome(code, 'about') +
