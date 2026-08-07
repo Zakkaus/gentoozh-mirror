@@ -1,6 +1,6 @@
 // 本地预览：node scripts/preview.mjs [outdir]
 //
-// 与线上共用 render.js，只有 ISO 数据是假的。R2 与边缘缓存要用 wrangler dev。
+// 与线上共用 render.js，只有 ISO 数据是假的。要连真实镜像站列表与边缘缓存，用 wrangler dev。
 
 import { mkdirSync, writeFileSync, cpSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -11,7 +11,7 @@ import { renderIndex, renderAbout } from '../src/render.js';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = process.argv[2] || join(root, 'dist');
 
-// 形状照真实桶内对象。
+// 形状照镜像站列表里的对象。
 const ISO = {
   latest: {
     key: 'gig-os-20260728.iso',
@@ -20,12 +20,6 @@ const ISO = {
     sha256: '9f2b41c8e0a7d365b18f4c2a90de77315caa6b0e4d81f9c37a25e6b8043fd192',
     md5: 'c41d8fa3b57e29604bc0d5f1a8e73b62',
   },
-  builds: [
-    { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28' },
-    { key: 'gig-os-20260721.iso', size: '4.7 GB', date: '2026-07-21' },
-    { key: 'gig-os-20260714.iso', size: '4.6 GB', date: '2026-07-14' },
-    { key: 'gig-os-20260707.iso', size: '4.6 GB', date: '2026-07-07' },
-  ],
 };
 
 rmSync(out, { recursive: true, force: true });

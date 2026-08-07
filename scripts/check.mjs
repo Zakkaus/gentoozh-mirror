@@ -9,7 +9,7 @@ import { renderIndex, renderAbout } from '../src/render.js';
 const problems = [];
 const fail = m => problems.push(m);
 
-// 假数据，形状照真实桶内对象。
+// 假数据，形状照镜像站列表里的对象。
 const ISO = {
   latest: { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28', sha256: 'f'.repeat(64), md5: 'f'.repeat(32) },
 };

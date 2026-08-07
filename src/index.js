@@ -31,14 +31,14 @@ export default {
 
     let body;
     if (route.page === 'about') {
-      // 说明页不读 R2，所以不套用下面的 noIso 兜底，渲染出错照常 500。
+      // 说明页不读镜像站，所以不套用下面的 noIso 兜底，渲染出错照常 500。
       body = renderAbout(route.locale.code);
     } else {
       let iso;
       try {
         iso = await readIsos();
       } catch (err) {
-        // 不缓存，下一次请求要重新读桶。
+        // 不缓存，下一次请求要重新读镜像站的列表。
         return new Response(t(route.locale.code, 'noIso'), {
           status: 503,
           headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },

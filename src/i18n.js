@@ -20,7 +20,7 @@ export const MESSAGES = {
     navHome: '下载',
 
     docTitle: 'Gentoo 中文社区 · 镜像站',
-    docDesc: 'Gentoo 中文社区镜像站，社区定制 KDE 桌面 Live ISO 下载。由 Cloudflare R2 提供，全球边缘、不限流量。',
+    docDesc: 'Gentoo 中文社区镜像站，社区定制 KDE 桌面 Live ISO 下载。由社区自建镜像站提供，国内外均有节点。',
     eyebrow: 'iso.gentoozh.org',
     title: 'Gentoo 中文社区 Live ISO',
     lead: 'KDE Plasma 6 桌面，预先配好中文环境与输入法，可直接试用，也可安装到硬盘。每周构建。',
@@ -62,7 +62,7 @@ export const MESSAGES = {
     navHome: '下載',
 
     docTitle: 'Gentoo 中文社群 · 鏡像站',
-    docDesc: 'Gentoo 中文社群鏡像站，社群訂製 KDE 桌面 Live ISO 下載。由 Cloudflare R2 提供，全球邊緣、不限流量。',
+    docDesc: 'Gentoo 中文社群鏡像站，社群訂製 KDE 桌面 Live ISO 下載。由社群自建鏡像站提供，境內外均有節點。',
     eyebrow: 'iso.gentoozh.org',
     title: 'Gentoo 中文社群 Live ISO',
     lead: 'KDE Plasma 6 桌面，預先配好中文環境與輸入法，可直接試用，也可安裝到硬碟。每週建置。',
@@ -104,7 +104,7 @@ export const MESSAGES = {
     navHome: 'Download',
 
     docTitle: 'Gentoo-zh Community · Mirror',
-    docDesc: 'The Gentoo-zh community mirror: a KDE desktop Live ISO built by the community. Served from Cloudflare R2, global edge, no traffic cap.',
+    docDesc: 'The Gentoo-zh community mirror: a KDE desktop Live ISO built by the community. Served from the community mirror, with nodes inside and outside China.',
     eyebrow: 'iso.gentoozh.org',
     title: 'Gentoo-zh Community Live ISO',
     lead: 'A KDE Plasma 6 desktop with the Chinese environment and input methods already set up. Run it live or install it to disk. Built weekly.',
