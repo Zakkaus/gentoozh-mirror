@@ -3,7 +3,7 @@
 [简体中文](README.md) · [正體中文](README.zh-TW.md) · [English](README.en.md)
 
 [iso.gentoozh.org](https://iso.gentoozh.org/) 的 Cloudflare Worker,Gentoo 中文社区 Live ISO 的下载站。
-它在边缘读取 R2 桶列出当前与历史版本，并按语言各渲染一份完整文档。
+它在边缘读取镜像站的目录列表取当前版本，并按语言各渲染一份完整文档。
 
 ## 路由
 
@@ -17,11 +17,11 @@
 
 未知路径重定向到读者所用语言的落地页。这是全站唯一读取 `Accept-Language` 的地方，因为已经指名语言的链接不应随打开它的人的浏览器变化。
 
-ISO 文件由 R2 自定义域 `r2.gentoozh.org` 提供，不经过 Worker。
+ISO 与校验和都在镜像站 `distfiles.gentoozh.org/gigos/`，不经过 Worker。旧域名 `r2.gentoozh.org` 已 301 到那里。
 
 ## 环境要求
 
-Node.js 与 `npx`。部署需要拥有 `gentoozh` R2 桶的 Cloudflare 账号，本地预览不需要。
+Node.js 与 `npx`。部署需要能发布该 Worker 的 Cloudflare 账号，本地预览不需要。
 
 ## 本地预览
 
@@ -31,7 +31,7 @@ node scripts/preview.mjs                     # 六份文档写入 dist/
 cd dist && python3 -m http.server 8721
 ```
 
-预览与线上共用 `src/render.js`,除 ISO 数据是假的以外，字节与生产一致。要连 R2 与边缘缓存，改用 `npm run dev`。
+预览与线上共用 `src/render.js`,除 ISO 数据是假的以外，字节与生产一致。要连真实的镜像站列表与边缘缓存，改用 `npm run dev`。
 
 ## 部署
 
@@ -43,7 +43,7 @@ cd dist && python3 -m http.server 8721
 
 | 路径 | 内容 |
 |---|---|
-| `src/index.js` | Worker 入口：路由、边缘缓存、读 R2 |
+| `src/index.js` | Worker 入口：路由、边缘缓存、读镜像站列表 |
 | `src/render.js` | 文档渲染,Worker、预览与检查共用 |
 | `src/i18n.js` | 语言表与三份消息目录 |
 | `src/content-about.js` | 说明页正文，一种语言一份 |

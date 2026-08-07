@@ -3,8 +3,8 @@
 [简体中文](README.md) · [正體中文](README.zh-TW.md) · [English](README.en.md)
 
 Cloudflare Worker serving [iso.gentoozh.org](https://iso.gentoozh.org/), the download site for the
-Gentoo-zh Community Live ISO. It lists the current and past ISO builds by reading an R2 bucket at
-the edge, and renders one complete document per language.
+Gentoo-zh Community Live ISO. It reads the mirror's directory listing at the edge to find the current
+build, and renders one complete document per language.
 
 ## Routes
 
@@ -21,12 +21,12 @@ An unknown path is redirected to the landing page of the reader's language. That
 `Accept-Language` is read, because a link that already names its language must not follow the
 browser of whoever opens it.
 
-ISO files are served from the R2 custom domain `r2.gentoozh.org`, so they never pass through the
-Worker.
+The ISO and its checksums live on the mirror at `distfiles.gentoozh.org/gigos/` and never pass through
+the Worker. The old `r2.gentoozh.org` redirects there with a 301.
 
 ## Requirements
 
-Node.js and `npx`. Deployment needs a Cloudflare account with the `gentoozh` R2 bucket; the local
+Node.js and `npx`. Deployment needs a Cloudflare account that can publish the Worker; the local
 preview does not.
 
 ## Preview locally
@@ -38,7 +38,7 @@ cd dist && python3 -m http.server 8721
 ```
 
 The preview uses the same `src/render.js` the edge uses, so the bytes match production except for
-the ISO data, which is fake. To exercise R2 and the edge cache, run `npm run dev` instead.
+the ISO data, which is fake. To exercise the real mirror listing and the edge cache, run `npm run dev`.
 
 ## Deploy
 
@@ -53,7 +53,7 @@ because external links still point at it. Build notifications go to
 
 | Path | Contents |
 |---|---|
-| `src/index.js` | Worker entry: routing, edge cache, R2 reads |
+| `src/index.js` | Worker entry: routing, edge cache, mirror listing |
 | `src/render.js` | Document rendering, shared by the Worker, the preview and the checks |
 | `src/i18n.js` | Locale table and the three message catalogues |
 | `src/content-about.js` | Usage-guide body, one per language |

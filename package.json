@@ -1,7 +1,7 @@
 {
   "name": "gigos-mirror",
   "private": true,
-  "description": "iso.gentoozh.org:Cloudflare Worker:边缘读 R2 渲染 Live ISO 下载落地页",
+  "description": "iso.gentoozh.org:Cloudflare Worker:边缘读镜像站列表渲染 Live ISO 下载落地页",
   "scripts": {
     "check": "node scripts/check.mjs",
     "preview": "node scripts/preview.mjs",
