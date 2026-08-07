@@ -144,13 +144,6 @@ export function t(locale, key) {
   return v;
 }
 
-export function localeOf(pathname) {
-  for (const l of LOCALES) {
-    if (l.path !== '/' && pathname.startsWith(l.path)) return l;
-  }
-  return LOCALES.find(l => l.code === DEFAULT_LOCALE);
-}
-
 // 仅供 index.js 的 elsewhere 判断未知路径的落点。已指名语言的路径一律照路径走，
 // 因为分享出去的链接不应随接收者的浏览器变化，边缘缓存也不应按 header 分裂。
 export function negotiate(header) {
