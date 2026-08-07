@@ -92,7 +92,7 @@ async function fetchJson(url) {
   return r.json();
 }
 
-// 校验和文件是 sha256sum 的输出，第一个字段是摘要。取不到就留空，页面照常渲染。
+// 校验和文件是 sha256sum 的输出，第一个字段是摘要。无法取得时留空，页面照常渲染。
 async function firstToken(name) {
   const r = await fetch(`${MIRROR_BASE}/${encodeURIComponent(name)}`, { cf: { cacheTtl: 60 } });
   if (!r.ok) return '';
