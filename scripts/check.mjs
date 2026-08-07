@@ -1,6 +1,6 @@
-// 构建期体检：npm run check
+// 构建期检查：npm run check
 //
-// 最后一步用 render.js 渲染全部文档，因此运行期缺键抛出的同一条在这里先触发。
+// 最后一步用 render.js 渲染全部文档，运行期缺键抛出的同一条异常在此先触发。
 
 import { LOCALES, DEFAULT_LOCALE, MESSAGES } from '../src/i18n.js';
 import { ABOUT } from '../src/content-about.js';
@@ -9,7 +9,7 @@ import { renderIndex, renderAbout } from '../src/render.js';
 const problems = [];
 const fail = m => problems.push(m);
 
-// 假数据，形状照镜像站列表里的对象。
+// 假数据，形状同 readIsos 的返回值。
 const ISO = {
   latest: { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28', sha256: 'f'.repeat(64), md5: 'f'.repeat(32) },
 };
@@ -27,7 +27,7 @@ for (const l of LOCALES) {
   const got = Object.keys(m).sort();
   for (const k of expected) if (!got.includes(k)) fail(`${l.code}: 缺键 ${k}`);
   for (const k of got) if (!expected.includes(k)) fail(`${l.code}: 多出键 ${k}（${DEFAULT_LOCALE} 里没有）`);
-  // copyOf 一类函数值必须各语言同型，否则调用点 TypeError。
+  // copyOf 一类函数值必须各语言同型，否则调用点抛 TypeError。
   for (const k of expected) {
     if (!got.includes(k)) continue;
     const a = typeof MESSAGES[DEFAULT_LOCALE][k];
@@ -61,8 +61,8 @@ for (const l of LOCALES) {
 }
 
 if (problems.length) {
-  console.error(`体检不过，${problems.length} 条：`);
+  console.error(`检查未通过，${problems.length} 条：`);
   for (const p of problems) console.error(`  ${p}`);
   process.exit(1);
 }
-console.log(`体检通过：${LOCALES.length} 种语言 × 2 页，键集合一致，无残留占位符。`);
+console.log(`检查通过：${LOCALES.length} 种语言 × 2 页，键集合一致，无残留占位符。`);

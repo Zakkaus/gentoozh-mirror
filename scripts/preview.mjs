@@ -11,7 +11,7 @@ import { renderIndex, renderAbout } from '../src/render.js';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = process.argv[2] || join(root, 'dist');
 
-// 形状照镜像站列表里的对象。
+// 假数据，形状同 readIsos 的返回值。
 const ISO = {
   latest: {
     key: 'gig-os-20260728.iso',

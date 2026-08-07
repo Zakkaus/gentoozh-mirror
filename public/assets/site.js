@@ -1,11 +1,11 @@
 /* 只做脚本才能做的两件事：写主题偏好、写剪贴板。
- * 页面在没有本文件时仍然完整，语言控件是三个链接。 */
+ * 本文件缺失时页面仍然完整，语言控件是三个链接。 */
 (function () {
   'use strict';
 
   var root = document.documentElement;
 
-  /* 控件默认 hidden，脚本运行后才显示，避免留下一个按不动的开关。 */
+  /* 控件默认 hidden，脚本执行后才显示，避免留下一个无响应的开关。 */
   var menu = document.querySelector('[data-theme-menu]');
   if (menu) {
     menu.hidden = false;
@@ -40,7 +40,7 @@
     paint(read());
   }
 
-  /* details 自身不处理点击外部与 Escape 关闭，这里补上。 */
+  /* details 不处理外部点击与 Escape 关闭。 */
   var menus = document.querySelectorAll('details.disclosure');
   document.addEventListener('click', function (e) {
     for (var i = 0; i < menus.length; i++) {
@@ -54,8 +54,7 @@
     }
   });
 
-  /* navigator.clipboard 在非安全上下文不存在，镜像站可能被以 http 访问，
-     所以保留 execCommand 回退。 */
+  /* 镜像站可能经 http 访问，非安全上下文没有 navigator.clipboard，因此保留 execCommand 回退。 */
   var toast = document.getElementById('toast');
   if (!toast) return;
   var timer;

@@ -10,8 +10,7 @@ const SITE = 'https://iso.gentoozh.org';
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-
-// 主题在首帧之前定下，避免闪一下再翻色。语言在路径里，不需要脚本。
+// 主题在首帧之前定下，避免渲染后再翻色闪烁。语言在路径里，不需要脚本。
 const EARLY = `(function(){try{var t=localStorage.getItem('mirror-theme');
 if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`;
 
@@ -98,7 +97,7 @@ export function renderIndex(code, iso) {
   const about = pathIn(code, 'about');
   const withAbout = s => s.split('@@ABOUT@@').join(about);
 
-  // 可及名称带上要复制的值，否则四个按钮的读屏名称完全相同。
+  // 可及名称带上待复制的值，否则四个按钮的读屏名称完全相同。
   const chip = (what, v) =>
     `<button type="button" class="copy" data-copy="${esc(v)}" aria-label="${esc(T('copyOf')(T(what), v))}">${esc(v)}</button>`;
 
@@ -165,7 +164,7 @@ export function renderIndex(code, iso) {
 
 export function renderAbout(code) {
   const T = k => t(code, k);
-  // 正文用 @@HOME@@ 占位，在这里换成本语言首页；写死 / 会让非简体读者掉回简体页。
+  // 正文用 @@HOME@@ 占位，在此换成本语言首页；写死 / 会让非简体读者退回简体页。
   const body = ABOUT[code].split('@@HOME@@').join(here(code).path);
   return head(code, 'about', T('aboutTitle') + ' · ' + T('brand'), T('aboutDesc')) +
     chrome(code, 'about') +

@@ -1,9 +1,6 @@
 /* 规则的原因见 DESIGN.md，这里只记一句话能说清的约束。 */
 
-/* token 层
-   一个 token 一次声明。light-dark() 把两套值放在同一行，取哪套由 color-scheme 决定，
-   所以深色不需要第二个块。原来那份把深色调色板写了两遍（属性覆盖一遍、媒体查询一遍），
-   八个值两份副本，改一处就漏一处。 */
+/* token 层：light-dark() 一次声明两套值，取哪套由 color-scheme 决定，因此不存在第二份深色调色板。 */
 :root {
   color-scheme: light dark;
 
@@ -21,8 +18,7 @@
   --hover:    light-dark(#f1f0f4, #26262c);
   --on-accent: light-dark(#ffffff, #14121c);
 
-  /* 阴影色单列，不挂在 --fg 上：--fg 随主题翻转，深色下会变成白色光晕。
-     light-dark() 只返回颜色，几何写在使用处，两个主题共用一套。 */
+  /* 阴影色单列，不挂在 --fg 上：--fg 随主题翻转，深色下会变成白色光晕。 */
   --shadow-color: light-dark(rgb(17 24 39 / 0.14), rgb(0 0 0 / 0.55));
 
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
@@ -32,7 +28,6 @@
   --r-panel: 0.85rem;
   --measure: 720px;
 }
-/* 显式主题只改 color-scheme，light-dark() 随之取值，不存在第二份调色板。 */
 :root[data-theme="light"] { color-scheme: light; }
 :root[data-theme="dark"]  { color-scheme: dark; }
 
@@ -53,9 +48,8 @@ body {
 }
 .skip:focus { left: 0.5rem; top: 0.5rem; }
 
-/* 顶栏
-   不用 backdrop-filter：它让底下文字的对比度随内容变化，量不出一个数，
-   forced-colors 下整层还会消失。92% 不透明的 token 背景 + 下边框，两个主题都能量。 */
+/* 顶栏不用 backdrop-filter：对比度随底层内容变化而无法量化，forced-colors 下整层还会消失。
+   改用 92% 不透明的 token 背景加下边框。 */
 .nav {
   position: sticky; top: 0; z-index: 40;
   border-bottom: 1px solid var(--border);
@@ -79,7 +73,7 @@ body {
 .nav-link:hover { background: var(--hover); color: var(--fg); }
 .nav-link[aria-current] { color: var(--accent); }
 
-/* 三种以上语言收进菜单，两种才平铺。触发器是图示，必须显式给可及名称。 */
+/* 三种以上语言收进菜单，两种才平铺。 */
 .disclosure { position: relative; }
 .disclosure > summary {
   display: inline-flex; align-items: center; justify-content: center;
@@ -103,7 +97,7 @@ body {
 }
 .disclosure a:hover, .disclosure button:hover { background: var(--hover); }
 .disclosure [aria-current], .disclosure [aria-checked="true"] { color: var(--accent); font-weight: 600; }
-/* 尺寸由容器决定，不写进 svg。 */
+/* 图标尺寸只在此声明，svg 自身不带宽高。 */
 .icon { width: 17px; height: 17px; flex: none; }
 
 @media (max-width: 26rem) { .nav-title { display: none; } }
@@ -120,14 +114,12 @@ body {
 :root:lang(en) .title { line-height: 1.12; }
 .lead { font-size: 1rem; line-height: 1.8; color: var(--fg-body); margin: 0 0 2.1rem; max-width: 54ch; }
 
-/* 当前版本是本页主体，产物名用等宽大字作标题。 */
 .build {
   border: 1px solid var(--border); border-radius: var(--r-panel);
   background: color-mix(in srgb, var(--accent) 5%, var(--card));
   padding: 1.5rem 1.6rem;
 }
 .build-label { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; color: var(--fg-soft); text-transform: uppercase; margin: 0 0 0.5rem; }
-/* 文件名是数据，允许任意位置断行，不得溢出。 */
 .build-name { font-family: var(--mono); font-size: 1.3rem; font-weight: 600; color: var(--fg); margin: 0 0 0.55rem; word-break: break-all; letter-spacing: -0.01em; }
 .build-meta { font-family: var(--mono); font-size: 0.82rem; color: var(--fg-soft); margin: 0 0 1.3rem; display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; }
 
@@ -151,7 +143,6 @@ body {
 .creds-row { display: flex; flex-wrap: wrap; gap: 0.45rem 1.15rem; }
 .creds-row + .creds-row { margin-top: 0.4rem; }
 .cred { display: inline-flex; align-items: baseline; gap: 0.35rem; }
-/* 用 <button> 换取 Enter、Space 与焦点环，无需自写键盘处理。 */
 .copy {
   font-family: var(--mono); font-size: inherit; font-weight: 600;
   background: var(--chip); color: var(--fg); border: 1px solid transparent;
@@ -161,7 +152,6 @@ body {
 
 .req { margin-top: 1.9rem; padding-top: 1.3rem; border-top: 1px solid var(--border); }
 .req-title { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; color: var(--fg); margin: 0 0 0.75rem; }
-/* 规格标签换行而非横向滚动。 */
 .specs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0 0 0.8rem; }
 .spec { font-family: var(--mono); font-size: 0.78rem; color: var(--fg-body); background: var(--card); border: 1px solid var(--border); border-radius: 0.35rem; padding: 0.22rem 0.58rem; }
 .req-body { font-size: 0.86rem; line-height: 1.75; color: var(--fg-body); margin: 0; }
@@ -174,7 +164,6 @@ body {
 .feature a, .req-body a, .foot a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .feature a:hover, .req-body a:hover, .foot a:hover { text-decoration: underline; }
 
-/* 宽度不足时先隐藏日期列，文件名与大小是核对所需。 */
 .builds { margin-top: 2rem; }
 .builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
 .builds-body { margin: 0; font-size: 0.9rem; }
@@ -191,11 +180,9 @@ body {
 .prose a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .prose a:hover { text-decoration: underline; }
 .prose code { font-family: var(--mono); font-size: 0.9em; background: var(--chip); padding: 0.08rem 0.32rem; border-radius: 0.25rem; }
-/* 代码块自身滚动，不撑宽文档。 */
 .prose pre { font-family: var(--mono); font-size: 0.82rem; background: var(--chip); padding: 0.8rem 1rem; border-radius: var(--r-control); overflow-x: auto; }
 .prose pre code { background: none; padding: 0; }
 
-/* 复制反馈用 role="status"，屏幕阅读器可播报。 */
 #toast {
   position: fixed; inset-block-end: 1.6rem; inset-inline-start: 50%; transform: translateX(-50%);
   background: var(--accent); color: var(--on-accent); font-size: 0.84rem; font-weight: 600;
@@ -203,7 +190,7 @@ body {
 }
 #toast:empty { display: none; }
 
-/* 动效在媒体查询内声明，不在查询外把时长压到零，否则留下看不见的中间态。 */
+/* 动效只在媒体查询内声明；若在查询外把时长压到零，会留下不可见的中间态。 */
 @media (prefers-reduced-motion: no-preference) {
   .btn { transition: background 0.15s ease; }
   #toast { animation: toast-in 0.18s ease; }

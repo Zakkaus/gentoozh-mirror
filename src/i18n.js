@@ -139,7 +139,7 @@ export const MESSAGES = {
 export function t(locale, key) {
   const m = MESSAGES[locale] || MESSAGES[DEFAULT_LOCALE];
   const v = m[key];
-  // 缺键直接抛，不让 undefined 进页面；npm run check 会先在构建前触发同一条。
+  // 缺键直接抛，不让 undefined 进页面；npm run check 在构建前先触发同一条。
   if (v === undefined) throw new Error(`missing message: ${locale}.${key}`);
   return v;
 }
@@ -152,7 +152,7 @@ export function localeOf(pathname) {
 }
 
 // 仅供 index.js 的 elsewhere 判断未知路径的落点。已指名语言的路径一律照路径走，
-// 因为分享出去的链接不应随收链接者的浏览器变化，边缘缓存也不应按 header 分裂。
+// 因为分享出去的链接不应随接收者的浏览器变化，边缘缓存也不应按 header 分裂。
 export function negotiate(header) {
   const want = String(header || '').toLowerCase();
   if (/(^|,|\s)en\b/.test(want) && !/zh/.test(want)) return 'en';

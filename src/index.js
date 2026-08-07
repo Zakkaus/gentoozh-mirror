@@ -22,8 +22,7 @@ export default {
     const route = routeOf(path);
     if (!route) return elsewhere(request);
 
-    // 缓存键用规范化后的语言路径，不含查询串，也不含 Accept-Language：
-    // 六份文档各缓各的，同一个 URL 对所有人是同一份字节。
+    // 缓存键用规范化后的语言路径，不含查询串与 Accept-Language，同一个 URL 对所有人返回同一份字节。
     const cache = caches.default;
     const key = new Request(new URL(pathOf(route), url), { method: 'GET' });
     const hit = await cache.match(key);
@@ -31,14 +30,13 @@ export default {
 
     let body;
     if (route.page === 'about') {
-      // 说明页不读镜像站，所以不套用下面的 noIso 兜底，渲染出错照常 500。
+      // 说明页不读镜像站，因此不套用下面的 noIso 回退，渲染出错照常 500。
       body = renderAbout(route.locale.code);
     } else {
       let iso;
       try {
         iso = await readIsos();
-      } catch (err) {
-        // 不缓存，下一次请求要重新读镜像站的列表。
+      } catch {
         return new Response(t(route.locale.code, 'noIso'), {
           status: 503,
           headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
@@ -68,7 +66,7 @@ function routeOf(path) {
   return null;
 }
 
-// 全站唯一读 Accept-Language 的地方，只用于未知路径该落到哪一份首页。
+// 全站唯一读 Accept-Language 的地方，只决定未知路径落到哪一份首页。
 function elsewhere(request) {
   const code = negotiate(request.headers.get('accept-language'));
   const home = LOCALES.find(l => l.code === code).path;
@@ -100,11 +98,11 @@ async function firstToken(name) {
 }
 
 export async function readIsos() {
-  // nginx 的 autoindex_format json，字段是 name / type / size / mtime。
+  // 镜像站列表来自 nginx autoindex_format json，字段为 name / type / size / mtime。
   const listed = await fetchJson(MIRROR_LISTING);
   const isos = listed
     .filter(o => o.type === 'file' && /^gig-os-\d{8}\.iso$/.test(o.name))
-    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));   // 新 → 旧
+    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));   // 由新到旧
 
   if (isos.length === 0) throw new Error('no iso on the mirror');
 
