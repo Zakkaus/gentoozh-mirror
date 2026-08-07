@@ -5,8 +5,7 @@ import { LOCALES, DEFAULT_LOCALE, t } from './i18n.js';
 import { ABOUT } from './content-about.js';
 import { icon } from './icons.js';
 
-const R2_BASE = 'https://r2.gentoozh.org';
-const MIRROR_LISTING = 'https://distfiles.gentoozh.org/gigos/';
+const MIRROR_BASE = 'https://distfiles.gentoozh.org/gigos';
 const SITE = 'https://iso.gentoozh.org';
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -113,11 +112,11 @@ export function renderIndex(code, iso) {
     <p class="build-label" id="build-label">${esc(T('buildLabel'))}</p>
     <p class="build-name">${esc(iso.latest.key)}</p>
     <p class="build-meta"><span>${esc(iso.latest.size)}</span><span>${esc(iso.latest.date)}</span><span>amd64</span></p>
-    <a class="btn" href="${R2_BASE}/${encodeURIComponent(iso.latest.key)}">${esc(T('download'))}</a>
+    <a class="btn" href="${MIRROR_BASE}/${encodeURIComponent(iso.latest.key)}">${esc(T('download'))}</a>
 
     <div class="hashes">
-      <div class="hash-row"><span class="hash-key">SHA256</span><span class="hash-val">${esc(iso.latest.sha256)}</span><a href="${R2_BASE}/${encodeURIComponent(iso.latest.key)}.sha256">.sha256</a></div>
-      <div class="hash-row"><span class="hash-key">MD5</span><span class="hash-val">${esc(iso.latest.md5)}</span><a href="${R2_BASE}/${encodeURIComponent(iso.latest.key)}.md5">.md5</a></div>
+      <div class="hash-row"><span class="hash-key">SHA256</span><span class="hash-val">${esc(iso.latest.sha256)}</span><a href="${MIRROR_BASE}/${encodeURIComponent(iso.latest.key)}.sha256">.sha256</a></div>
+      <div class="hash-row"><span class="hash-key">MD5</span><span class="hash-val">${esc(iso.latest.md5)}</span><a href="${MIRROR_BASE}/${encodeURIComponent(iso.latest.key)}.md5">.md5</a></div>
       <p class="verify">${esc(T('verify'))}</p>
     </div>
 
@@ -158,7 +157,7 @@ export function renderIndex(code, iso) {
 
   <section class="builds" aria-labelledby="builds-label">
     <div class="builds-label" id="builds-label">${esc(T('allver'))}</div>
-    <p class="builds-body"><a href="${MIRROR_LISTING}">${esc(T('allverLink'))}</a></p>
+    <p class="builds-body"><a href="${MIRROR_BASE}/">${esc(T('allverLink'))}</a></p>
   </section>
 </main>
 ` + foot(code);

@@ -1,10 +1,12 @@
-// iso.gentoozh.org 的 Worker 入口。路由表在 LOCALES，绑定在 wrangler.toml。
-// 下载链接指向 R2 自定义域 r2.gentoozh.org，ISO 本体不经过 Worker。
+// iso.gentoozh.org 的 Worker 入口。路由表在 LOCALES。
+// ISO 与校验和都在镜像站 distfiles.gentoozh.org/gigos/，本体不经过 Worker。
 
 import { LOCALES, negotiate, t } from './i18n.js';
 import { renderIndex, renderAbout } from './render.js';
 
 const CACHE_SECONDS = 60;
+const MIRROR_BASE = 'https://distfiles.gentoozh.org/gigos';
+const MIRROR_LISTING = 'https://distfiles.gentoozh.org/_ls/gigos/';
 
 export default {
   async fetch(request, env, ctx) {
@@ -34,7 +36,7 @@ export default {
     } else {
       let iso;
       try {
-        iso = await readIsos(env);
+        iso = await readIsos();
       } catch (err) {
         // 不缓存，下一次请求要重新读桶。
         return new Response(t(route.locale.code, 'noIso'), {
@@ -84,29 +86,35 @@ export const dateFromKey = key => {
   return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
 };
 
-async function firstToken(env, key) {
-  const o = await env.BUCKET.get(key);
-  if (!o) return '';
-  return (await o.text()).trim().split(/\s+/)[0] || '';
+async function fetchJson(url) {
+  const r = await fetch(url, { cf: { cacheTtl: 60 } });
+  if (!r.ok) throw new Error(`${url} -> ${r.status}`);
+  return r.json();
 }
 
-export async function readIsos(env) {
-  // 不翻页：单页上限 1000 个 key，发布脚本按 R2_KEEP 只保留最近几版。
-  const listed = await env.BUCKET.list({ prefix: 'gig-os-' });
-  const isos = (listed.objects || [])
-    .filter(o => /^gig-os-\d{8}\.iso$/.test(o.key))
-    .sort((a, b) => (a.key < b.key ? 1 : a.key > b.key ? -1 : 0));   // 新 → 旧
+// 校验和文件是 sha256sum 的输出，第一个字段是摘要。取不到就留空，页面照常渲染。
+async function firstToken(name) {
+  const r = await fetch(`${MIRROR_BASE}/${encodeURIComponent(name)}`, { cf: { cacheTtl: 60 } });
+  if (!r.ok) return '';
+  return (await r.text()).trim().split(/\s+/)[0] || '';
+}
 
-  if (isos.length === 0) throw new Error('no iso in bucket');
+export async function readIsos() {
+  // nginx 的 autoindex_format json，字段是 name / type / size / mtime。
+  const listed = await fetchJson(MIRROR_LISTING);
+  const isos = listed
+    .filter(o => o.type === 'file' && /^gig-os-\d{8}\.iso$/.test(o.name))
+    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));   // 新 → 旧
+
+  if (isos.length === 0) throw new Error('no iso on the mirror');
 
   const latest = isos[0];
   const [sha256, md5] = await Promise.all([
-    firstToken(env, latest.key + '.sha256'),
-    firstToken(env, latest.key + '.md5'),
+    firstToken(latest.name + '.sha256'),
+    firstToken(latest.name + '.md5'),
   ]);
 
   return {
-    latest: { key: latest.key, size: fmtSize(latest.size), date: dateFromKey(latest.key), sha256, md5 },
-    builds: isos.map(o => ({ key: o.key, size: fmtSize(o.size), date: dateFromKey(o.key) })),
+    latest: { key: latest.name, size: fmtSize(latest.size), date: dateFromKey(latest.name), sha256, md5 },
   };
 }

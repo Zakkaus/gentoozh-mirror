@@ -6,8 +6,3 @@ compatibility_date = "2026-06-01"
 [assets]
 directory = "./public"
 binding = "ASSETS"
-
-# R2 只读，用于列出 ISO 与校验和。
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "gentoozh"
