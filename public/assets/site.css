@@ -177,13 +177,9 @@ body {
 /* 宽度不足时先隐藏日期列，文件名与大小是核对所需。 */
 .builds { margin-top: 2rem; }
 .builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
-.builds table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.84rem; }
-.builds td { padding: 0.5rem 0; border-top: 1px solid var(--border); }
-.builds tr:first-child td { border-top: none; }
-.builds td.f a { color: var(--accent); text-decoration: none; font-weight: 600; word-break: break-all; }
-.builds td.f a:hover { text-decoration: underline; }
-.builds td.s, .builds td.d { text-align: end; color: var(--fg-soft); white-space: nowrap; padding-inline-start: 0.9rem; }
-@media (max-width: 29rem) { .builds td.d { display: none; } }
+.builds-body { margin: 0; font-size: 0.9rem; }
+.builds-body a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.builds-body a:hover { text-decoration: underline; }
 
 .foot { max-width: var(--measure); margin: 2.2rem auto 0; padding: 1.3rem 1.25rem 2.6rem; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--fg-soft); }
 

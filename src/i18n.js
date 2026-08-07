@@ -42,7 +42,7 @@ export const MESSAGES = {
     featNv: 'RTX 20/30/40/50 需要硬件加速时，在启动菜单选择闭源 NVIDIA 项，并先在 BIOS 关闭 Secure Boot。详见<a href="@@ABOUT@@">使用说明</a>。',
 
     allver: '全部版本',
-    colFile: '文件', colSize: '大小', colDate: '日期',
+    allverLink: '在镜像站浏览全部版本',
     footer: '本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社区</a> 的 Live ISO 下载镜像。新版构建通知：<a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>。',
 
     aboutTitle: '关于这个 Live ISO',
@@ -83,7 +83,7 @@ export const MESSAGES = {
     featNv: 'RTX 20/30/40/50 需要硬體加速時，在啟動選單選擇閉源 NVIDIA 項，並先在 BIOS 關閉 Secure Boot。詳見<a href="@@ABOUT@@">使用說明</a>。',
 
     allver: '全部版本',
-    colFile: '檔案', colSize: '大小', colDate: '日期',
+    allverLink: '在鏡像站瀏覽全部版本',
     footer: '本站是 <a href="https://www.gentoo.org.cn/">Gentoo 中文社群</a> 的 Live ISO 下載鏡像。新版建置通知：<a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>。',
 
     aboutTitle: '關於這個 Live ISO',
@@ -124,7 +124,7 @@ export const MESSAGES = {
     featNv: 'For hardware acceleration on RTX 20/30/40/50, pick the proprietary NVIDIA boot entry and disable Secure Boot in the BIOS first. See the <a href="@@ABOUT@@">guide</a>.',
 
     allver: 'All builds',
-    colFile: 'File', colSize: 'Size', colDate: 'Date',
+    allverLink: 'Browse all builds on the mirror',
     footer: 'The Live ISO download mirror of the <a href="https://www.gentoo.org.cn/">Gentoo-zh Community</a>. New-build notifications: <a href="https://t.me/gentoomirror">Telegram @gentoomirror</a>.',
 
     aboutTitle: 'About this Live ISO',

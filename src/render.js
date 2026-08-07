@@ -6,6 +6,7 @@ import { ABOUT } from './content-about.js';
 import { icon } from './icons.js';
 
 const R2_BASE = 'https://r2.gentoozh.org';
+const MIRROR_LISTING = 'https://distfiles.gentoozh.org/gigos/';
 const SITE = 'https://iso.gentoozh.org';
 
 export const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -97,11 +98,6 @@ export function renderIndex(code, iso) {
   const about = pathIn(code, 'about');
   const withAbout = s => s.split('@@ABOUT@@').join(about);
 
-  const history = iso.builds.map(b =>
-    `      <tr><td class="f"><a href="${R2_BASE}/${encodeURIComponent(b.key)}">${esc(b.key)}</a></td>` +
-    `<td class="s">${esc(b.size)}</td><td class="d">${esc(b.date)}</td></tr>`
-  ).join('\n');
-
   // 可及名称带上要复制的值，否则四个按钮的读屏名称完全相同。
   const chip = (what, v) =>
     `<button type="button" class="copy" data-copy="${esc(v)}" aria-label="${esc(T('copyOf')(T(what), v))}">${esc(v)}</button>`;
@@ -161,13 +157,7 @@ export function renderIndex(code, iso) {
 
   <section class="builds" aria-labelledby="builds-label">
     <div class="builds-label" id="builds-label">${esc(T('allver'))}</div>
-    <table>
-      <caption class="skip">${esc(T('allver'))}</caption>
-      <thead><tr><th scope="col">${esc(T('colFile'))}</th><th scope="col" class="s">${esc(T('colSize'))}</th><th scope="col" class="d">${esc(T('colDate'))}</th></tr></thead>
-      <tbody>
-${history}
-      </tbody>
-    </table>
+    <p class="builds-body"><a href="${MIRROR_LISTING}">${esc(T('allverLink'))}</a></p>
   </section>
 </main>
 ` + foot(code);
