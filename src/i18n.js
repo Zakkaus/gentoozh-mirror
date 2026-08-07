@@ -15,6 +15,7 @@ export const MESSAGES = {
     themeLight: '浅色', themeDark: '深色', themeSystem: '跟随系统',
     skip: '跳到正文',
     brand: 'Gentoo 中文社区 · 镜像站',
+    navBinhost: '二进制包',
     navAbout: '使用说明',
     navHome: '下载',
 
@@ -56,6 +57,7 @@ export const MESSAGES = {
     themeLight: '淺色', themeDark: '深色', themeSystem: '跟隨系統',
     skip: '跳到正文',
     brand: 'Gentoo 中文社群 · 鏡像站',
+    navBinhost: '二進位套件',
     navAbout: '使用說明',
     navHome: '下載',
 
@@ -97,6 +99,7 @@ export const MESSAGES = {
     themeLight: 'Light', themeDark: 'Dark', themeSystem: 'System',
     skip: 'Skip to content',
     brand: 'Gentoo-zh Community · Mirror',
+    navBinhost: 'Binary packages',
     navAbout: 'Guide',
     navHome: 'Download',
 
