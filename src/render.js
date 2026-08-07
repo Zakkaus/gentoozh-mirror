@@ -44,6 +44,7 @@ function chrome(code, page) {
       <span class="nav-title">${esc(t(code, 'brand'))}</span>
     </a>
     <nav class="nav-controls" aria-label="${esc(t(code, 'brand'))}">
+      <a class="nav-link" href="https://distfiles.gentoozh.org/">${esc(t(code, 'navBinhost'))}</a>
       ${other}
       <details class="disclosure" data-lang-menu>
         <summary aria-label="${esc(t(code, 'lang'))}" title="${esc(t(code, 'lang'))}">${icon('languages')}</summary>
