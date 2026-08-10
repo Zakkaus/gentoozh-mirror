@@ -11,11 +11,8 @@ const problems = [];
 const fail = m => problems.push(m);
 
 // 假数据，形状同 readIsos 的返回值。
-// 三种同步状态轮着给，任一状态的渲染路径缺文案都会在下面暴露。
-const STATES = ['ready', 'behind', 'unknown'];
 const ISO = {
   latest: { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28', sha256: 'f'.repeat(64), md5: 'f'.repeat(32) },
-  mirrors: MIRRORS.map((m, i) => ({ ...m, state: STATES[i % STATES.length] })),
 };
 
 // 镜像清单里的每个 nameKey 都必须在三份目录里有文案。

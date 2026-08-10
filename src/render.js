@@ -4,7 +4,7 @@
 import { LOCALES, DEFAULT_LOCALE, t } from './i18n.js';
 import { ABOUT } from './content-about.js';
 import { icon } from './icons.js';
-import { SOURCE } from './mirrors.js';
+import { MIRRORS, SOURCE } from './mirrors.js';
 
 const SITE = 'https://iso.gentoozh.org';
 
@@ -92,20 +92,13 @@ const foot = code => `<footer class="foot">${t(code, 'footer')}</footer>
 </body>
 </html>`;
 
-// 同步状态不用颜色区分：DESIGN.md 定了这一页没有状态色。ready 指向 ISO 本身，
-// 其余两种指向该站目录，读者仍能自己看有哪几版。
-const STATE_TEXT = { ready: 'mirrorReady', behind: 'mirrorBehind', unknown: 'mirrorUnknown' };
-
-function mirrorRow(code, m, key) {
-  const T = k => t(code, k);
-  const name = T(m.nameKey);
-  const ready = m.state === 'ready';
-  const href = ready ? `${m.base}/${encodeURIComponent(key)}` : `${m.base}/`;
-  const label = ready ? T('mirrorGoOf')(name) : T('mirrorBrowseOf')(name);
+// 每一行只指向该站目录。可及名称带上站名，否则五个链接的读屏名称完全相同。
+function mirrorRow(code, m) {
+  const name = t(code, m.nameKey);
   return `      <li class="mirror">
         <span class="mirror-name">${esc(name)}</span>
-        <span class="mirror-meta"><span class="mirror-host">${esc(m.host)}</span><span>${esc(T(STATE_TEXT[m.state]))}</span></span>
-        <a class="mirror-go" href="${href}" aria-label="${esc(label)}">${esc(ready ? T('mirrorGo') : T('mirrorBrowse'))}</a>
+        <span class="mirror-meta"><span class="mirror-host">${esc(m.host)}</span></span>
+        <a class="mirror-go" href="${m.dir}" aria-label="${esc(t(code, 'mirrorBrowseOf')(name))}">${esc(t(code, 'mirrorBrowse'))}</a>
       </li>`;
 }
 
@@ -128,7 +121,7 @@ export function renderIndex(code, iso) {
     <p class="build-label" id="build-label">${esc(T('buildLabel'))}</p>
     <p class="build-name">${esc(iso.latest.key)}</p>
     <p class="build-meta"><span>${esc(iso.latest.size)}</span><span>${esc(iso.latest.date)}</span><span>amd64</span></p>
-    <a class="btn" href="${SOURCE.base}/${encodeURIComponent(iso.latest.key)}">${esc(T('download'))}</a>
+    <a class="btn" href="#mirrors">${esc(T('download'))}</a>
 
     <div class="hashes">
       <div class="hash-row"><span class="hash-key">SHA256</span><span class="hash-val">${esc(iso.latest.sha256)}</span><a href="${SOURCE.base}/${encodeURIComponent(iso.latest.key)}.sha256">.sha256</a></div>
@@ -171,11 +164,11 @@ export function renderIndex(code, iso) {
     </section>
   </div>
 
-  <section class="mirrors" aria-labelledby="mirrors-title">
+  <section class="mirrors" id="mirrors" aria-labelledby="mirrors-title">
     <h2 class="mirrors-title" id="mirrors-title">${esc(T('mirrorTitle'))}</h2>
-    <p class="mirrors-lead">${esc(T('mirrorLead'))}</p>
+    <p class="mirrors-lead">${esc(T('mirrorLead')(iso.latest.key))}</p>
     <ul class="mirror-list">
-${iso.mirrors.map(m => mirrorRow(code, m, iso.latest.key)).join('\n')}
+${MIRRORS.map(m => mirrorRow(code, m)).join('\n')}
     </ul>
   </section>
 
