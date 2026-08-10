@@ -164,6 +164,25 @@ body {
 .feature a, .req-body a, .foot a { color: var(--accent); text-decoration: none; font-weight: 600; }
 .feature a:hover, .req-body a:hover, .foot a:hover { text-decoration: underline; }
 
+/* 镜像列表。同步状态不给状态色，差别只在这一行的文字与链接指向哪里。
+   已同步指向 ISO 本身，其余指向该站目录。 */
+.mirrors { margin-top: 2rem; padding-top: 1.4rem; border-top: 1px solid var(--border); }
+.mirrors-title { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin: 0 0 0.4rem; }
+.mirrors-lead { font-size: 0.86rem; line-height: 1.75; color: var(--fg-body); margin: 0 0 0.9rem; max-width: 54ch; }
+.mirror-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--r-panel); background: var(--card); }
+/* 名称与元信息占第一列上下两行，动作占第二列并跨两行。第一列 minmax(0,1fr) 才允许其内容收缩换行。 */
+.mirror { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.1rem 0.9rem; padding: 0.7rem 1.1rem; }
+.mirror + .mirror { border-top: 1px solid var(--border); }
+.mirror-name { grid-column: 1; font-size: 0.9rem; font-weight: 600; color: var(--fg); overflow-wrap: anywhere; }
+.mirror-meta { grid-column: 1; display: flex; flex-wrap: wrap; gap: 0.1rem 0.75rem; font-family: var(--mono); font-size: 0.76rem; color: var(--fg-soft); }
+.mirror-host { overflow-wrap: anywhere; }
+.mirror-go {
+  grid-column: 2; grid-row: 1 / span 2; justify-self: end; white-space: nowrap;
+  font-size: 0.84rem; font-weight: 600; color: var(--accent); text-decoration: none;
+  border: 1px solid var(--border); border-radius: var(--r-control); padding: 0.34rem 0.8rem;
+}
+.mirror-go:hover { background: var(--hover); border-color: var(--accent); }
+
 .builds { margin-top: 2rem; }
 .builds-label { font-size: 0.9rem; font-weight: 700; color: var(--fg); margin-bottom: 0.55rem; }
 .builds-body { margin: 0; font-size: 0.9rem; }

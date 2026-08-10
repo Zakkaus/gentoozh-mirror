@@ -7,6 +7,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { LOCALES } from '../src/i18n.js';
 import { renderIndex, renderAbout } from '../src/render.js';
+import { MIRRORS } from '../src/mirrors.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = process.argv[2] || join(root, 'dist');
@@ -20,6 +21,8 @@ const ISO = {
     sha256: '9f2b41c8e0a7d365b18f4c2a90de77315caa6b0e4d81f9c37a25e6b8043fd192',
     md5: 'c41d8fa3b57e29604bc0d5f1a8e73b62',
   },
+  // 三种同步状态轮着给，一次预览就能看到全部三种行的样子。
+  mirrors: MIRRORS.map((m, i) => ({ ...m, state: ['ready', 'behind', 'unknown'][i % 3] })),
 };
 
 rmSync(out, { recursive: true, force: true });

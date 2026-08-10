@@ -5,14 +5,25 @@
 import { LOCALES, DEFAULT_LOCALE, MESSAGES } from '../src/i18n.js';
 import { ABOUT } from '../src/content-about.js';
 import { renderIndex, renderAbout } from '../src/render.js';
+import { MIRRORS } from '../src/mirrors.js';
 
 const problems = [];
 const fail = m => problems.push(m);
 
 // 假数据，形状同 readIsos 的返回值。
+// 三种同步状态轮着给，任一状态的渲染路径缺文案都会在下面暴露。
+const STATES = ['ready', 'behind', 'unknown'];
 const ISO = {
   latest: { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28', sha256: 'f'.repeat(64), md5: 'f'.repeat(32) },
+  mirrors: MIRRORS.map((m, i) => ({ ...m, state: STATES[i % STATES.length] })),
 };
+
+// 镜像清单里的每个 nameKey 都必须在三份目录里有文案。
+for (const l of LOCALES) {
+  for (const m of MIRRORS) {
+    if (!MESSAGES[l.code]?.[m.nameKey]) fail(`${l.code}: 镜像 ${m.id} 缺文案键 ${m.nameKey}`);
+  }
+}
 
 for (const l of LOCALES) {
   if (!MESSAGES[l.code]) fail(`${l.code}: 没有消息目录`);

@@ -1,12 +1,15 @@
 // iso.gentoozh.org 的 Worker 入口。路由表在 LOCALES。
-// ISO 与校验和都在镜像站 distfiles.gentoozh.org/gigos/，本体不经过 Worker。
+// ISO 与校验和都在源站与各教育网镜像上，本体不经过 Worker。清单见 mirrors.js。
 
 import { LOCALES, negotiate, t } from './i18n.js';
 import { renderIndex, renderAbout } from './render.js';
+import { MIRRORS, SOURCE } from './mirrors.js';
 
 const CACHE_SECONDS = 60;
-const MIRROR_BASE = 'https://distfiles.gentoozh.org/gigos';
 const MIRROR_LISTING = 'https://distfiles.gentoozh.org/_ls/gigos/';
+// 探测结果比页面缓存久，同一个 PoP 反复渲染只探一次。
+const PROBE_SECONDS = 600;
+const PROBE_TIMEOUT_MS = 3000;
 
 export default {
   async fetch(request, env, ctx) {
@@ -92,9 +95,28 @@ async function fetchJson(url) {
 
 // 校验和文件是 sha256sum 的输出，第一个字段是摘要。无法取得时留空，页面照常渲染。
 async function firstToken(name) {
-  const r = await fetch(`${MIRROR_BASE}/${encodeURIComponent(name)}`, { cf: { cacheTtl: 60 } });
+  const r = await fetch(`${SOURCE.base}/${encodeURIComponent(name)}`, { cf: { cacheTtl: 60 } });
   if (!r.ok) return '';
   return (await r.text()).trim().split(/\s+/)[0] || '';
+}
+
+// 镜像按计划同步，最新一版可能还没到，所以逐个取镜像上的 .sha256 与源站比对。
+// 三种结果分开：相等是 ready，文件不存在是 behind，网络失败或源站校验和缺失是 unknown。
+// unknown 不能并进 behind，那等于替镜像断言一件没测到的事。
+async function mirrorState(m, name, sha256) {
+  if (m.source) return 'ready';
+  if (!sha256) return 'unknown';
+  try {
+    const r = await fetch(`${m.base}/${encodeURIComponent(name)}.sha256`, {
+      cf: { cacheTtl: PROBE_SECONDS, cacheEverything: true },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+    if (r.status === 404) return 'behind';
+    if (!r.ok) return 'unknown';
+    return (await r.text()).trim().split(/\s+/)[0] === sha256 ? 'ready' : 'behind';
+  } catch {
+    return 'unknown';
+  }
 }
 
 export async function readIsos() {
@@ -112,7 +134,10 @@ export async function readIsos() {
     firstToken(latest.name + '.md5'),
   ]);
 
+  const states = await Promise.all(MIRRORS.map(m => mirrorState(m, latest.name, sha256)));
+
   return {
     latest: { key: latest.name, size: fmtSize(latest.size), date: dateFromKey(latest.name), sha256, md5 },
+    mirrors: MIRRORS.map((m, i) => ({ ...m, state: states[i] })),
   };
 }
