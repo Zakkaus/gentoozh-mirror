@@ -43,7 +43,8 @@ export const MESSAGES = {
     featNv: 'RTX 20/30/40/50 需要硬件加速时，在启动菜单选择闭源 NVIDIA 项，并先在 BIOS 关闭 Secure Boot。详见<a href="@@ABOUT@@">使用说明</a>。',
 
     mirrorTitle: '下载镜像',
-    mirrorLead: name => `最新版本 ${name}。教育网镜像在中国大陆通常快得多，但它们是计划同步，可能有几个小时的延迟，请直接在对应目录里下载最新版本。`,
+    // 收到的是已转义并包好 <code> 的版本号，与 req、featZfs 同样按 HTML 插入。
+    mirrorLead: build => `最新版本 ${build}。教育网镜像在中国大陆通常快得多，但它们是计划同步，可能有几个小时的延迟，请直接在对应目录里下载最新版本。`,
     mirrorSource: '源站',
     mirrorCernet: '校园网联合镜像站（自动就近）',
     mirrorNju: '南京大学',
@@ -95,7 +96,8 @@ export const MESSAGES = {
     featNv: 'RTX 20/30/40/50 需要硬體加速時，在啟動選單選擇閉源 NVIDIA 項，並先在 BIOS 關閉 Secure Boot。詳見<a href="@@ABOUT@@">使用說明</a>。',
 
     mirrorTitle: '下載鏡像',
-    mirrorLead: name => `最新版本 ${name}。教育網鏡像在中國大陸通常快得多，但它們是排程同步，可能有幾個小時的延遲，請直接在對應目錄裡下載最新版本。`,
+    // 收到的是已转义并包好 <code> 的版本号，与 req、featZfs 同样按 HTML 插入。
+    mirrorLead: build => `最新版本 ${build}。教育網鏡像在中國大陸通常快得多，但它們是排程同步，可能有幾個小時的延遲，請直接在對應目錄裡下載最新版本。`,
     mirrorSource: '源站',
     mirrorCernet: '校園網聯合鏡像站（自動就近）',
     mirrorNju: '南京大學',
@@ -147,7 +149,7 @@ export const MESSAGES = {
     featNv: 'For hardware acceleration on RTX 20/30/40/50, pick the proprietary NVIDIA boot entry and disable Secure Boot in the BIOS first. See the <a href="@@ABOUT@@">guide</a>.',
 
     mirrorTitle: 'Mirrors',
-    mirrorLead: name => `The current build is ${name}. The education-network mirrors are much faster inside mainland China, but they sync on a schedule and can run several hours behind, so take the newest build from the directory itself.`,
+    mirrorLead: build => `The current build is ${build}. The education-network mirrors are much faster inside mainland China, but they sync on a schedule and can run several hours behind, so take the newest build from the directory itself.`,
     mirrorSource: 'Source',
     mirrorCernet: 'CERNET united mirror (nearest node)',
     mirrorNju: 'Nanjing University',

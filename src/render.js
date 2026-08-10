@@ -166,7 +166,7 @@ export function renderIndex(code, iso) {
 
   <section class="mirrors" id="mirrors" aria-labelledby="mirrors-title">
     <h2 class="mirrors-title" id="mirrors-title">${esc(T('mirrorTitle'))}</h2>
-    <p class="mirrors-lead">${esc(T('mirrorLead')(iso.latest.key))}</p>
+    <p class="mirrors-lead">${T('mirrorLead')(`<code class="build-chip">${esc(iso.latest.key)}</code>`)}</p>
     <ul class="mirror-list">
 ${MIRRORS.map(m => mirrorRow(code, m)).join('\n')}
     </ul>
