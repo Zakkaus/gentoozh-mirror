@@ -4,7 +4,8 @@
 import { LOCALES, DEFAULT_LOCALE, t } from './i18n.js';
 import { ABOUT } from './content-about.js';
 import { icon } from './icons.js';
-import { MIRRORS, SOURCE } from './mirrors.js';
+import { MIRRORS, SOURCE, dirOf } from './mirrors.js';
+import { PRODUCTS } from './products.js';
 
 const SITE = 'https://iso.gentoozh.org';
 
@@ -92,17 +93,63 @@ const foot = code => `<footer class="foot">${t(code, 'footer')}</footer>
 </body>
 </html>`;
 
-// 每一行只指向该站目录。可及名称带上站名，否则五个链接的读屏名称完全相同。
-function mirrorRow(code, m) {
-  const name = t(code, m.nameKey);
+// 每一行只指向该站目录。可及名称带上站名与产品，否则十个链接的读屏名称只有五种。
+function mirrorRow(code, m, p) {
+  const site = t(code, m.nameKey);
   return `      <li class="mirror">
-        <span class="mirror-name">${esc(name)}</span>
+        <span class="mirror-name">${esc(site)}</span>
         <span class="mirror-meta"><span class="mirror-host">${esc(m.host)}</span></span>
-        <a class="mirror-go" href="${m.dir}" aria-label="${esc(t(code, 'mirrorBrowseOf')(name))}">${esc(t(code, 'mirrorBrowse'))}</a>
+        <a class="mirror-go" href="${dirOf(m, p)}" aria-label="${esc(t(code, 'mirrorBrowseOf')(site))}">${esc(t(code, 'mirrorBrowse'))}</a>
       </li>`;
 }
 
-export function renderIndex(code, iso) {
+// 切换条在每个面板里各渲染一份，当前项由服务端标好。只有被选中的面板可见，因此看到的那份
+// 永远是对的，切换状态不必用 CSS 表达，也就没有按 id 逐项写死的样式。
+function switcher(code, current) {
+  const items = PRODUCTS.map(p => {
+    const cur = p.id === current ? ' aria-current="true"' : '';
+    return `<a href="#panel-${p.id}"${cur}>${esc(t(code, p.nameKey))}</a>`;
+  }).join('');
+  return `      <nav class="switch" aria-label="${esc(t(code, 'pick'))}">${items}</nav>`;
+}
+
+function hashRows(code, p, b) {
+  return p.hashes.map((h, i) => {
+    const href = `${b.files}/${encodeURIComponent(b.key)}${h.ext}`;
+    // 只有第一个校验和文件内联显示摘要，其余给链接：最小版的 .DIGESTS 里是四条，展不开。
+    const val = i === 0 ? `<span class="hash-val">${esc(b.sha256)}</span>` : '';
+    return `      <div class="hash-row"><span class="hash-key">${esc(h.label)}</span>${val}<a href="${href}">${esc(h.ext)}</a></div>`;
+  }).join('\n');
+}
+
+function buildCard(code, p, b, inner) {
+  const T = k => t(code, k);
+  return `    <section class="build" aria-labelledby="build-${p.id}">
+      <p class="build-label" id="build-${p.id}">${esc(T('buildLabel'))}</p>
+      <p class="build-name">${esc(b.key)}</p>
+      <p class="build-meta"><span>${esc(b.size)}</span><span>${esc(b.date)}</span><span>amd64</span></p>
+      <a class="btn" href="#mirrors-${p.id}">${esc(T('download'))}</a>
+
+      <div class="hashes">
+${hashRows(code, p, b)}
+        <p class="verify">${esc(T('verify'))}</p>
+      </div>
+${inner}
+    </section>`;
+}
+
+function mirrorsSection(code, p, b) {
+  const T = k => t(code, k);
+  return `    <section class="mirrors" id="mirrors-${p.id}" aria-labelledby="mirrors-${p.id}-title">
+      <h2 class="mirrors-title" id="mirrors-${p.id}-title">${esc(T('mirrorTitle'))}</h2>
+      <p class="mirrors-lead">${T('mirrorLead')(`<code class="build-chip">${esc(b.key)}</code>`)}</p>
+      <ul class="mirror-list">
+${MIRRORS.map(m => mirrorRow(code, m, p)).join('\n')}
+      </ul>
+    </section>`;
+}
+
+function desktopPanel(code, p, b) {
   const T = k => t(code, k);
   const about = pathIn(code, 'about');
   const withAbout = s => s.split('@@ABOUT@@').join(about);
@@ -111,71 +158,99 @@ export function renderIndex(code, iso) {
   const chip = (what, v) =>
     `<button type="button" class="copy" data-copy="${esc(v)}" aria-label="${esc(T('copyOf')(T(what), v))}">${esc(v)}</button>`;
 
+  const creds = `
+      <div class="creds">
+        <div class="creds-label">${esc(T('credsLabel'))}</div>
+        <div class="creds-row">
+          <span class="cred">${esc(T('credUser'))} ${chip('credUser', 'live')}</span>
+          <span class="cred">${esc(T('credPass'))} ${chip('credPass', 'live')}</span>
+        </div>
+        <div class="creds-row">
+          <span class="cred">${esc(T('credUser'))} ${chip('credUser', 'root')}</span>
+          <span class="cred">${esc(T('credPass'))} ${chip('credPass', 'live')}</span>
+        </div>
+      </div>`;
+
+  return `${switcher(code, p.id)}
+    <p class="panel-lead">${esc(T(p.leadKey))}</p>
+${buildCard(code, p, b, creds)}
+
+    <section class="req" aria-labelledby="req-title">
+      <p class="req-title" id="req-title">${esc(T('reqTitle'))}</p>
+      <div class="specs">
+        <span class="spec">x86-64</span>
+        <span class="spec">AVX2</span>
+        <span class="spec">${esc(T('specCpu'))}</span>
+        <span class="spec">UEFI / BIOS</span>
+      </div>
+      <p class="req-body">${T('req')}</p>
+    </section>
+
+    <div class="features">
+      <section class="feature">
+        <h2>${esc(T('featZfsTitle'))}</h2>
+        <p>${withAbout(T('featZfs'))}</p>
+      </section>
+      <section class="feature">
+        <h2>${esc(T('featNvTitle'))}</h2>
+        <p>${withAbout(T('featNv'))}</p>
+      </section>
+    </div>
+
+${mirrorsSection(code, p, b)}
+
+    <section class="builds" aria-labelledby="builds-${p.id}">
+      <div class="builds-label" id="builds-${p.id}">${esc(T('allver'))}</div>
+      <p class="builds-body"><a href="${SOURCE.root}/${p.seg}/">${esc(T('allverLink'))}</a></p>
+    </section>`;
+}
+
+function minimalPanel(code, p, b) {
+  const T = k => t(code, k);
+  return `${switcher(code, p.id)}
+    <p class="panel-lead">${esc(T(p.leadKey))}</p>
+${buildCard(code, p, b, '')}
+
+    <section class="req" aria-labelledby="diff-title">
+      <p class="req-title" id="diff-title">${esc(T('minDiffTitle'))}</p>
+      <ol class="diffs">
+        <li>${T('minDiff1')}</li>
+        <li>${T('minDiff2')}</li>
+        <li>${T('minDiff3')}</li>
+      </ol>
+      <p class="req-body">${esc(T('minRest'))}</p>
+    </section>
+
+${mirrorsSection(code, p, b)}
+
+    <section class="builds" aria-labelledby="builds-${p.id}">
+      <div class="builds-label" id="builds-${p.id}">${esc(T('allver'))}</div>
+      <p class="builds-body"><a href="${SOURCE.root}/${p.seg}/">${esc(T('allverLink'))}</a>
+        · <a href="${p.releases}">${esc(T('releasesLink'))}</a></p>
+    </section>`;
+}
+
+const PANEL = { desktop: desktopPanel, minimal: minimalPanel };
+
+export function renderIndex(code, builds) {
+  const T = k => t(code, k);
+  // 未找到构建的产品整段不渲染，切换条里也不会出现它。
+  const shown = PRODUCTS.filter(p => builds[p.id]);
+
+  const panels = shown.map(p => `  <section class="panel" id="panel-${p.id}" aria-labelledby="panel-${p.id}-h">
+    <h2 class="vh" id="panel-${p.id}-h">${esc(T(p.nameKey))}</h2>
+${PANEL[p.id](code, p, builds[p.id])}
+  </section>`).join('\n\n');
+
   return head(code, 'index', T('docTitle'), T('docDesc')) + chrome(code, 'index') + `
 <main class="wrap" id="main">
   <p class="eyebrow">${esc(T('eyebrow'))}</p>
   <h1 class="title">${esc(T('title'))}</h1>
   <p class="lead">${esc(T('lead'))}</p>
 
-  <section class="build" aria-labelledby="build-label">
-    <p class="build-label" id="build-label">${esc(T('buildLabel'))}</p>
-    <p class="build-name">${esc(iso.latest.key)}</p>
-    <p class="build-meta"><span>${esc(iso.latest.size)}</span><span>${esc(iso.latest.date)}</span><span>amd64</span></p>
-    <a class="btn" href="#mirrors">${esc(T('download'))}</a>
-
-    <div class="hashes">
-      <div class="hash-row"><span class="hash-key">SHA256</span><span class="hash-val">${esc(iso.latest.sha256)}</span><a href="${SOURCE.base}/${encodeURIComponent(iso.latest.key)}.sha256">.sha256</a></div>
-      <div class="hash-row"><span class="hash-key">MD5</span><span class="hash-val">${esc(iso.latest.md5)}</span><a href="${SOURCE.base}/${encodeURIComponent(iso.latest.key)}.md5">.md5</a></div>
-      <p class="verify">${esc(T('verify'))}</p>
-    </div>
-
-    <div class="creds">
-      <div class="creds-label">${esc(T('credsLabel'))}</div>
-      <div class="creds-row">
-        <span class="cred">${esc(T('credUser'))} ${chip('credUser', 'live')}</span>
-        <span class="cred">${esc(T('credPass'))} ${chip('credPass', 'live')}</span>
-      </div>
-      <div class="creds-row">
-        <span class="cred">${esc(T('credUser'))} ${chip('credUser', 'root')}</span>
-        <span class="cred">${esc(T('credPass'))} ${chip('credPass', 'live')}</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="req" aria-labelledby="req-title">
-    <p class="req-title" id="req-title">${esc(T('reqTitle'))}</p>
-    <div class="specs">
-      <span class="spec">x86-64</span>
-      <span class="spec">AVX2</span>
-      <span class="spec">${esc(T('specCpu'))}</span>
-      <span class="spec">UEFI / BIOS</span>
-    </div>
-    <p class="req-body">${T('req')}</p>
-  </section>
-
-  <div class="features">
-    <section class="feature">
-      <h2>${esc(T('featZfsTitle'))}</h2>
-      <p>${withAbout(T('featZfs'))}</p>
-    </section>
-    <section class="feature">
-      <h2>${esc(T('featNvTitle'))}</h2>
-      <p>${withAbout(T('featNv'))}</p>
-    </section>
+  <div class="panels">
+${panels}
   </div>
-
-  <section class="mirrors" id="mirrors" aria-labelledby="mirrors-title">
-    <h2 class="mirrors-title" id="mirrors-title">${esc(T('mirrorTitle'))}</h2>
-    <p class="mirrors-lead">${T('mirrorLead')(`<code class="build-chip">${esc(iso.latest.key)}</code>`)}</p>
-    <ul class="mirror-list">
-${MIRRORS.map(m => mirrorRow(code, m)).join('\n')}
-    </ul>
-  </section>
-
-  <section class="builds" aria-labelledby="builds-label">
-    <div class="builds-label" id="builds-label">${esc(T('allver'))}</div>
-    <p class="builds-body"><a href="${SOURCE.base}/">${esc(T('allverLink'))}</a></p>
-  </section>
 </main>
 ` + foot(code);
 }

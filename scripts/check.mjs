@@ -6,16 +6,25 @@ import { LOCALES, DEFAULT_LOCALE, MESSAGES } from '../src/i18n.js';
 import { ABOUT } from '../src/content-about.js';
 import { renderIndex, renderAbout } from '../src/render.js';
 import { MIRRORS } from '../src/mirrors.js';
+import { PRODUCTS } from '../src/products.js';
 
 const problems = [];
 const fail = m => problems.push(m);
 
-// 假数据，形状同 readIsos 的返回值。
-const ISO = {
-  latest: { key: 'gig-os-20260728.iso', size: '4.7 GB', date: '2026-07-28', sha256: 'f'.repeat(64), md5: 'f'.repeat(32) },
+// 假数据，形状同 readBuilds 的返回值。
+const BUILDS = {
+  desktop: {
+    id: 'desktop', key: 'gig-os-20260807.iso', size: '4.1 GB', date: '2026-08-07',
+    sha256: '9f2b41c8e0a7d365b18f4c2a90de77315caa6b0e4d81f9c37a25e6b8043fd192',
+    files: 'https://distfiles.gentoozh.org/_raw/gigos',
+  },
+  minimal: {
+    id: 'minimal', key: 'install-amd64-cjk-minimal-20260813T073053Z.iso', size: '943 MB', date: '2026-08-13',
+    sha256: '7d0e58aa3680fe777cfa1b80e6f8a55df8af913e01ea17dd4f69f04591b68013',
+    files: 'https://distfiles.gentoozh.org/_raw/gentoo-cjk-livecd/20260813T073053Z',
+  },
 };
 
-// 镜像清单里的每个 nameKey 都必须在三份目录里有文案。
 for (const l of LOCALES) {
   for (const m of MIRRORS) {
     if (!MESSAGES[l.code]?.[m.nameKey]) fail(`${l.code}: 镜像 ${m.id} 缺文案键 ${m.nameKey}`);
@@ -53,7 +62,7 @@ for (const l of LOCALES) {
 }
 
 for (const l of LOCALES) {
-  for (const [page, html] of [['index', () => renderIndex(l.code, ISO)], ['about', () => renderAbout(l.code)]]) {
+  for (const [page, html] of [['index', () => renderIndex(l.code, BUILDS)], ['about', () => renderAbout(l.code)]]) {
     let out;
     try {
       out = html();

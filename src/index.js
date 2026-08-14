@@ -1,12 +1,12 @@
-// iso.gentoozh.org 的 Worker 入口。路由表在 LOCALES。
-// ISO 与校验和都在源站与各教育网镜像上，本体不经过 Worker。清单见 mirrors.js。
+// iso.gentoozh.org 的 Worker 入口。路由表在 LOCALES，发布的镜像清单在 products.js。
+// ISO 与校验和都在源站与各教育网镜像上，本体不经过 Worker。
 
 import { LOCALES, negotiate, t } from './i18n.js';
 import { renderIndex, renderAbout } from './render.js';
 import { SOURCE } from './mirrors.js';
+import { PRODUCTS, dateOf } from './products.js';
 
 const CACHE_SECONDS = 60;
-const MIRROR_LISTING = 'https://distfiles.gentoozh.org/_ls/gigos/';
 
 export default {
   async fetch(request, env, ctx) {
@@ -33,16 +33,16 @@ export default {
       // 说明页不读镜像站，因此不套用下面的 noIso 回退，渲染出错照常 500。
       body = renderAbout(route.locale.code);
     } else {
-      let iso;
+      let builds;
       try {
-        iso = await readIsos();
+        builds = await readBuilds();
       } catch {
         return new Response(t(route.locale.code, 'noIso'), {
           status: 503,
           headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
         });
       }
-      body = renderIndex(route.locale.code, iso);
+      body = renderIndex(route.locale.code, builds);
     }
 
     const resp = new Response(body, {
@@ -79,40 +79,66 @@ export const fmtSize = bytes => {
   return gb >= 1 ? gb.toFixed(1) + ' GB' : Math.round(n / 1024 ** 2) + ' MB';
 };
 
-export const dateFromKey = key => {
-  const m = key.match(/^gig-os-(\d{4})(\d{2})(\d{2})\.iso$/);
-  return m ? `${m[1]}-${m[2]}-${m[3]}` : '';
-};
-
 async function fetchJson(url) {
   const r = await fetch(url, { cf: { cacheTtl: 60 } });
   if (!r.ok) throw new Error(`${url} -> ${r.status}`);
   return r.json();
 }
 
-// 校验和文件是 sha256sum 的输出，第一个字段是摘要。无法取得时留空，页面照常渲染。
-async function firstToken(name) {
-  const r = await fetch(`${SOURCE.base}/${encodeURIComponent(name)}`, { cf: { cacheTtl: 60 } });
-  if (!r.ok) return '';
-  return (await r.text()).trim().split(/\s+/)[0] || '';
+// 校验和文件的第一行可能是 `# SHA256 HASH` 这样的表头，最小版就带，因此按行找第一条以摘要
+// 开头的，不能直接取整份文件的第一个字段。未找到摘要时留空，页面照常渲染。
+function digestOf(text) {
+  for (const line of text.split('\n')) {
+    const m = line.trim().match(/^([0-9a-f]{32,128})\s/i);
+    if (m) return m[1];
+  }
+  return '';
 }
 
-export async function readIsos() {
-  // 镜像站列表来自 nginx autoindex_format json，字段为 name / type / size / mtime。
-  const listed = await fetchJson(MIRROR_LISTING);
-  const isos = listed
-    .filter(o => o.type === 'file' && /^gig-os-\d{8}\.iso$/.test(o.name))
-    .sort((a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0));   // 由新到旧
+async function firstDigest(url) {
+  const r = await fetch(url, { cf: { cacheTtl: 60 } });
+  if (!r.ok) return '';
+  return digestOf(await r.text());
+}
 
-  if (isos.length === 0) throw new Error('no iso on the mirror');
+// 列表来自 nginx autoindex_format json，字段为 name / type / size / mtime。
+// flat 的文件平铺在 <seg>/，stamped 的每次构建一个时间戳子目录，文件在里面。
+async function newestBuild(p) {
+  const top = await fetchJson(`${SOURCE.ls}/${p.seg}/`);
+  const newestFirst = (a, b) => (a.name < b.name ? 1 : a.name > b.name ? -1 : 0);
 
-  const latest = isos[0];
-  const [sha256, md5] = await Promise.all([
-    firstToken(latest.name + '.sha256'),
-    firstToken(latest.name + '.md5'),
-  ]);
+  if (p.layout === 'flat') {
+    const f = top.filter(o => o.type === 'file' && p.file.test(o.name)).sort(newestFirst)[0];
+    if (!f) throw new Error(`no iso in ${p.seg}`);
+    return { name: f.name, size: f.size, path: p.seg };
+  }
 
+  const d = top.filter(o => o.type === 'directory' && /^\d{8}T\d{6}Z$/.test(o.name)).sort(newestFirst)[0];
+  if (!d) throw new Error(`no build directory in ${p.seg}`);
+  const inner = await fetchJson(`${SOURCE.ls}/${p.seg}/${d.name}/`);
+  const f = inner.filter(o => o.type === 'file' && p.file.test(o.name)).sort(newestFirst)[0];
+  if (!f) throw new Error(`no iso in ${p.seg}/${d.name}`);
+  return { name: f.name, size: f.size, path: `${p.seg}/${d.name}` };
+}
+
+async function readProduct(p) {
+  const b = await newestBuild(p);
+  const files = `${SOURCE.raw}/${b.path}`;
   return {
-    latest: { key: latest.name, size: fmtSize(latest.size), date: dateFromKey(latest.name), sha256, md5 },
+    id: p.id,
+    key: b.name,
+    size: fmtSize(b.size),
+    date: dateOf(b.name),
+    sha256: await firstDigest(`${files}/${encodeURIComponent(b.name)}${p.hashes[0].ext}`),
+    files,
   };
+}
+
+// 一个产品读失败不拖垮另一个，否则新加的产品改个目录名就能让整页 503。
+// 渲染端跳过未找到构建的产品，两个都未找到才算整体失败。
+export async function readBuilds() {
+  const got = await Promise.all(PRODUCTS.map(p => readProduct(p).catch(() => null)));
+  const builds = Object.fromEntries(got.filter(Boolean).map(b => [b.id, b]));
+  if (Object.keys(builds).length === 0) throw new Error('no build on the mirror');
+  return builds;
 }
