@@ -102,7 +102,13 @@ body {
 /* 图标尺寸只在此声明，svg 自身不带宽高。 */
 .icon { width: 17px; height: 17px; flex: none; }
 
-@media (max-width: 26rem) { .nav-title { display: none; } }
+/* 窄屏顶栏放不下两条文字链接。宁可换到第二行也不隐藏入口：藏起来的导航等于没有。 */
+@media (max-width: 26rem) {
+  .nav-title { display: none; }
+  .nav-inner { flex-wrap: wrap; row-gap: 0.35rem; }
+  /* flex: none 会把宽度锁在 max-content，光加 flex-wrap 永远触发不了换行，必须先允许收缩。 */
+  .nav-controls { flex: 1 1 auto; min-width: 0; flex-wrap: wrap; justify-content: flex-end; }
+}
 
 /* 内容 */
 .wrap { max-width: var(--measure); margin: 0 auto; padding: 2.6rem 1.25rem 1rem; }
@@ -120,10 +126,13 @@ body {
 .vh { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 
 /* 产品切换。面板由 :target 决定，无脚本可用，链接可分享，前进后退有效。
-   这三条与产品数量无关，加一个产品不必改样式；当前项由服务端标 aria-current。 */
+   这三条与产品数量无关，加一个产品不必改样式；当前项由服务端标 aria-current。
+   目标落在面板内部也算选中：下载按钮锚到本面板的镜像段，只认 .panel:target 的话
+   hash 一变就没有面板匹配，兜底规则会把读者甩回第一个面板。 */
 .panel { display: none; scroll-margin-block-start: 4rem; }
-.panel:target { display: block; }
-.panels:not(:has(.panel:target)) .panel:first-child { display: block; }
+.panel:target,
+.panel:has(:target) { display: block; }
+.panels:not(:has(:target)) .panel:first-child { display: block; }
 
 .switch { display: inline-flex; flex-wrap: wrap; gap: 0.2rem; padding: 0.2rem; margin: 0 0 1.5rem; border: 1px solid var(--border); border-radius: var(--r-control); background: var(--card); }
 .switch a { padding: 0.4rem 0.9rem; border-radius: 0.3rem; font-size: 0.88rem; font-weight: 600; color: var(--fg-soft); text-decoration: none; white-space: nowrap; }
